@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "log.h"
 
 msg_body::msg_body(std::string_view heading, std::basic_ostream<char>& out) : _out(out), _buf()
