@@ -1,11 +1,16 @@
 #ifndef ARPCTL_FRAMEWORK_H
 #define ARPCTL_FRAMEWORK_H
 
+#ifndef __GNUG__
+#warning Application must be compiled with GNU/C++-compatible-compilers
+#endif
+
 /* POSIX */
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 /* CONCEPTS */
 #include <stdexcept>
