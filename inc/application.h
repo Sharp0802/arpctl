@@ -5,18 +5,18 @@
 #include "xthread.h"
 
 
-class application final
+class Application final
 {
-public:
-    explicit application(const std::vector<std::string_view>& argv);
-    ~application();
-
-    void start();
-    worker::state join();
-    void abort();
-
 private:
-	void help();
+
+
+public:
+    explicit Application(const std::vector<std::string_view>& argv);
+    ~Application();
+
+    void Start();
+    Worker::State Join();
+    void Abort();
 };
 
 

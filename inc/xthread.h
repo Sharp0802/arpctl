@@ -3,16 +3,19 @@
 
 #include "framework.h"
 
-class worker
+class Worker
 {
 public:
-	enum class state : std::uint8_t
+	enum class State : std::uint8_t
 	{
 		COMPLETED = 0,
 		RESERVED = 1,
 		OCCUPIED = 2,
 		EXCEPTION = 3
 	};
+
+public:
+	static size_t ID();
 };
 
 
