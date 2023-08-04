@@ -8,15 +8,27 @@ int main(int argc, char* argv[])
 	for (ssize_t i = 0; i < argc; ++i)
 		args.emplace_back(argv[i]);
 
-	application app(args);
+	Worker::State result;
 
-	app.start();
-	auto result = app.join();
-	app.abort();
-
-	if (result == worker::state::EXCEPTION)
+	try
 	{
-		// LOG
+		Application app(args);
+		app.Start();
+		result = app.Join();
+		app.Abort();
+	}
+	catch (const std::exception& e)
+	{
+		LOG(CRIT) << "Application throws exception.\n"
+					 "Application will be terminated immediately\n"
+					 "===== EXCEPTION ====="
+				  << e.what();
+		result = Worker::State::EXCEPTION;
+	}
+
+	if (result == Worker::State::EXCEPTION)
+	{
+		LOG(CRIT) << "Application exited with exception";
 		return -1;
 	}
 
