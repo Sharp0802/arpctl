@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "pre/eth.h"
 
 EthernetHeader::EthernetHeader() : _dto({ MAC::Unknown, MAC::Unknown, 0 })
