@@ -17,7 +17,7 @@ public:
 
 	void Start();
 
-	Worker::State Join();
+	enum Worker::State Join();
 
 	void Abort();
 };

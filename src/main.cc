@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	for (ssize_t i = 0; i < argc; ++i)
 		args.emplace_back(argv[i]);
 
-	Worker::State result;
+	enum Worker::State result;
 
 	try
 	{
