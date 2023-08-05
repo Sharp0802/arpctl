@@ -33,7 +33,8 @@ public:
 
 	explicit IP(void* raw);
 
-	explicit IP(const std::string_view& str);
+	[[nodiscard]]
+	static std::optional<IP> From(const std::string_view& str);
 
 public:
 	property<DTO(IP)> Raw {
@@ -59,10 +60,12 @@ public:
 		}
 	};
 
+	explicit operator std::string_view() const;
+
 public:
 	IP& operator=(const IP& rhs);
 
-	uint8_t operator[](size_t i);
+	uint8_t operator[](size_t i) const;
 };
 
 
