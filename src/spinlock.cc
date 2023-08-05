@@ -1,6 +1,6 @@
 #include "spinlock.h"
 
-void spinlock::lock()
+void Spinlock::Lock()
 {
 	for (;;)
 	{
@@ -11,13 +11,13 @@ void spinlock::lock()
 	}
 }
 
-bool spinlock::try_lock()
+bool Spinlock::TryLock()
 {
 	return !_sync.load(std::memory_order_relaxed) &&
 		   !_sync.exchange(true, std::memory_order_acquire);
 }
 
-void spinlock::unlock()
+void Spinlock::Unlock()
 {
 	_sync.store(false, std::memory_order_release);
 }

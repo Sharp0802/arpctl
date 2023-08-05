@@ -4,17 +4,17 @@
 #include "framework.h"
 
 
-class spinlock final
+class Spinlock final
 {
 private:
 	std::atomic<bool> _sync = { false };
 
 public:
-	void lock();
+	void Lock();
 
-	bool try_lock();
+	bool TryLock();
 
-	void unlock();
+	void Unlock();
 };
 
 #endif //ARPCTL_SPINLOCK_H
