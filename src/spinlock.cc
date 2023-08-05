@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "spinlock.h"
 
 void Spinlock::Lock()

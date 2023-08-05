@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "pre/ip.h"
 
 IP::IP() : _dto({ 0, 0, 0, 0 })
