@@ -41,6 +41,10 @@ public:
 	MAC& operator=(const MAC& rhs);
 
 	uint8_t operator[](size_t i) const;
+
+public:
+	inline static DTO(MAC) Unknown = { 0, 0, 0, 0, 0, 0 };
+	inline static DTO(MAC) Broadcast = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 };
 
 
