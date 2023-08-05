@@ -23,7 +23,7 @@ void Receiver::Run(volatile const bool* token) const
 			throw network_error(msg);
 		}
 		default:
-			if (hdr->caplen < sizeof(DTO(ETH)))
+			if (hdr->caplen < sizeof(DTO(EthernetHeader)))
 				break;
 			Handle(hdr->caplen, data);
 			break;
@@ -33,11 +33,11 @@ void Receiver::Run(volatile const bool* token) const
 
 void Receiver::Handle(size_t size, const uint8_t* data) const
 {
-	ETH eth(const_cast<uint8_t*>(data));
+	EthernetHeader eth(const_cast<uint8_t*>(data));
 
 	std::vector<uint8_t> buf;
-	buf.resize(size - sizeof(ETH));
-	std::memcpy(buf.data(), data + sizeof(ETH), buf.size());
+	buf.resize(size - sizeof(EthernetHeader));
+	std::memcpy(buf.data(), data + sizeof(EthernetHeader), buf.size());
 
 	_received(eth, buf);
 }

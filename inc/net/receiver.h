@@ -12,7 +12,7 @@ private:
 	inline static Receiver* _instance;
 
 	std::shared_ptr<pcap_t> _pcap;
-	Event<ETH, const std::vector<uint8_t>&> _received;
+	Event<EthernetHeader, const std::vector<uint8_t>&> _received;
 
 public:
 	explicit Receiver(std::shared_ptr<pcap_t> pcap) : _pcap(std::move(pcap))

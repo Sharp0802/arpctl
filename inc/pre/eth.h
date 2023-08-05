@@ -6,14 +6,14 @@
 #include "mac.h"
 
 
-decl_DTO(ETH)
+decl_DTO(EthernetHeader)
 {
 	DTO(MAC) dmac;
 	DTO(MAC) smac;
 	uint16_t type;
 };
 
-class ETH final
+class EthernetHeader final
 {
 public:
 	enum class EtherType : std::uint16_t
@@ -24,16 +24,16 @@ public:
 	};
 
 private:
-	DTO(ETH) _dto;
+	DTO(EthernetHeader) _dto;
 
 public:
-	ETH();
+	EthernetHeader();
 
-	ETH(const ETH& rhs) = default;
+	EthernetHeader(const EthernetHeader& rhs) = default;
 
-	explicit ETH(MAC dmac, MAC smac, uint16_t type);
+	explicit EthernetHeader(MAC dmac, MAC smac, uint16_t type);
 
-	explicit ETH(void* rhs);
+	explicit EthernetHeader(void* rhs);
 
 public:
 	readonly<MAC> Destination{
