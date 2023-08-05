@@ -37,27 +37,30 @@ public:
 	static std::optional<IP> From(const std::string_view& str);
 
 public:
-	property<DTO(IP)> Raw {
-		_get {
-			return _dto;
-		},
-		_set {
-			_dto = value;
-		}
+	property<DTO(IP)> Raw{
+			_get
+			{
+				return _dto;
+			},
+			_set
+			{
+				_dto = value;
+			}
 	};
 
-	readonly<Class> Class {
-		_get {
-			if (_dto.seg[0] <= static_cast<uint8_t>(Class::A))
-				return Class::A;
-			if (_dto.seg[0] <= static_cast<uint8_t>(Class::B))
-				return Class::B;
-			if (_dto.seg[0] <= static_cast<uint8_t>(Class::C))
-				return Class::C;
-			if (_dto.seg[0] <= static_cast<uint8_t>(Class::D))
-				return Class::D;
-			return Class::E;
-		}
+	readonly<Class> Class{
+			_get
+			{
+				if (_dto.seg[0] <= static_cast<uint8_t>(Class::A))
+					return Class::A;
+				if (_dto.seg[0] <= static_cast<uint8_t>(Class::B))
+					return Class::B;
+				if (_dto.seg[0] <= static_cast<uint8_t>(Class::C))
+					return Class::C;
+				if (_dto.seg[0] <= static_cast<uint8_t>(Class::D))
+					return Class::D;
+				return Class::E;
+			}
 	};
 
 	explicit operator std::string_view() const;

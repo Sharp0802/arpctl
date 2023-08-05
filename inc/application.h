@@ -11,12 +11,15 @@ private:
 
 
 public:
-    explicit Application(const std::vector<std::string_view>& argv);
-    ~Application();
+	explicit Application(const std::vector<std::string_view>& argv);
 
-    void Start();
-    Worker::State Join();
-    void Abort();
+	~Application();
+
+	void Start();
+
+	Worker::State Join();
+
+	void Abort();
 };
 
 

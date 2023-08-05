@@ -12,8 +12,8 @@ private:
 
 public:
 	explicit __property(std::function<T()> getter, std::function<void(T&)> setter) :
-	_getter(getter),
-	_setter(setter)
+			_getter(getter),
+			_setter(setter)
 	{
 	}
 
