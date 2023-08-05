@@ -63,9 +63,9 @@ public:
 			}
 	};
 
+public:
 	explicit operator std::string_view() const;
 
-public:
 	IP& operator=(const IP& rhs);
 
 	uint8_t operator[](size_t i) const;
