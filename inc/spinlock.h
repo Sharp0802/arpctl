@@ -17,4 +17,20 @@ public:
 	void Unlock();
 };
 
+namespace pstl
+{
+	class spinlock final
+	{
+	private:
+		std::atomic<bool> _sync = { false };
+
+	public:
+		void lock();
+
+		bool try_lock();
+
+		void unlock();
+	};
+}
+
 #endif //ARPCTL_SPINLOCK_H
