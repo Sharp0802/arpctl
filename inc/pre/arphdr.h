@@ -64,7 +64,7 @@ public:
 			{
 				_dto = value;
 			}
-	}
+	};
 
 	property<HardwareType> Hardware{
 			_get

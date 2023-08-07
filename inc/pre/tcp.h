@@ -29,7 +29,7 @@ decl_DTO(PseudoIPv4Header)
 	uint16_t len;
 };
 
-class TCP final
+class TCP final : public IChecksumable
 {
 public:
 	enum class Flag : uint8_t
@@ -54,12 +54,11 @@ public:
 
 	explicit TCP(const IPv4Header& iphdr, const void* raw);
 
+public:
+	uint16_t CalculateChecksum() noexcept override;
+
 private:
-	[[gnu::always_inline]]
-	inline void UpdateChecksum() noexcept
-	{
-		_dto.chk = CalculateChecksum<TCP>(&_dto, _ip);
-	}
+	void UpdateChecksum() noexcept;
 
 public:
 	property<DTO(TCP)> Raw{

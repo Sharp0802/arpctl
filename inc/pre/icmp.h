@@ -4,7 +4,7 @@
 #include "framework.h"
 #include "convention.h"
 #include "property.h"
-#include "net/checksum.h"
+#include "ichecksumable.h"
 
 
 decl_DTO(ICMP)
@@ -15,7 +15,7 @@ decl_DTO(ICMP)
 	uint32_t rst;
 };
 
-class ICMP final
+class ICMP final : public IChecksumable
 {
 public:
 	enum class Type : std::uint8_t
@@ -97,12 +97,11 @@ public:
 
 	explicit ICMP(const void* raw);
 
+public:
+	uint16_t CalculateChecksum() noexcept override;
+
 private:
-	[[gnu::always_inline]]
-	inline void UpdateChecksum() noexcept
-	{
-		_raw.chk = CalculateChecksum<ICMP>(&_raw);
-	}
+	void UpdateChecksum() noexcept;
 
 public:
 	property<DTO(ICMP)> Raw{

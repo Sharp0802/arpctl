@@ -5,7 +5,7 @@
 #include "convention.h"
 #include "ip.h"
 #include "property.h"
-#include "net/checksum.h"
+#include "ichecksumable.h"
 
 
 decl_DTO(IPv4Header)
@@ -25,7 +25,7 @@ decl_DTO(IPv4Header)
 	DTO(IP) dip;
 };
 
-class IPv4Header final
+class IPv4Header final : public IChecksumable
 {
 private:
 	DTO(IPv4Header) _dto;
@@ -37,12 +37,11 @@ public:
 
 	explicit IPv4Header(void* raw);
 
+public:
+	uint16_t CalculateChecksum() noexcept override;
+
 private:
-	[[gnu::always_inline]]
-	inline void UpdateChecksum()
-	{
-		_dto.chk = CalculateChecksum<IPv4Header>(&_dto);
-	}
+	void UpdateChecksum();
 
 public:
 	property<DTO(IPv4Header)> Raw {
