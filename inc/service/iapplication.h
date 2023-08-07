@@ -8,9 +8,7 @@
 class IApplication
 {
 public:
-	virtual ~IApplication()
-	{
-	}
+	virtual ~IApplication();
 
 	virtual void Configure(const std::vector<std::string_view>& argv) = 0;
 
