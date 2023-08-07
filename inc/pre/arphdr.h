@@ -55,6 +55,17 @@ public:
 	explicit ARPHeader(void* raw);
 
 public:
+	property<DTO(ARPHeader)> Raw{
+			_get
+			{
+				return _dto;
+			},
+			_set
+			{
+				_dto = value;
+			}
+	}
+
 	property<HardwareType> Hardware{
 			_get
 			{

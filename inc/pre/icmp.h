@@ -105,47 +105,58 @@ private:
 	}
 
 public:
-	property<Type> Type {
-		_get
-		{
-			return static_cast<enum Type>(_raw.type);
-		},
-		_set
-		{
-			_raw.type = static_cast<uint8_t>(value);
-			UpdateChecksum();
-		}
+	property<DTO(ICMP)> Raw{
+			_get
+			{
+				return _raw;
+			},
+			_set
+			{
+				_raw = value;
+			}
 	};
 
-	property<Code> Code {
-		_get
-		{
-			return static_cast<enum Code>(_raw.code);
-		},
-		_set
-		{
-			_raw.code = static_cast<uint8_t>(value);
-			UpdateChecksum();
-		}
+	property<Type> Type{
+			_get
+			{
+				return static_cast<enum Type>(_raw.type);
+			},
+			_set
+			{
+				_raw.type = static_cast<uint8_t>(value);
+				UpdateChecksum();
+			}
 	};
 
-	property<uint32_t> Value {
-		_get
-		{
-			return ntohl(_raw.rst);
-		},
-		_set
-		{
-			_raw.rst = htonl(value);
-			UpdateChecksum();
-		}
+	property<Code> Code{
+			_get
+			{
+				return static_cast<enum Code>(_raw.code);
+			},
+			_set
+			{
+				_raw.code = static_cast<uint8_t>(value);
+				UpdateChecksum();
+			}
 	};
 
-	readonly<uint16_t> Checksum {
-		_get
-		{
-			return ntohl(_raw.chk);
-		}
+	property<uint32_t> Value{
+			_get
+			{
+				return ntohl(_raw.rst);
+			},
+			_set
+			{
+				_raw.rst = htonl(value);
+				UpdateChecksum();
+			}
+	};
+
+	readonly<uint16_t> Checksum{
+			_get
+			{
+				return ntohl(_raw.chk);
+			}
 	};
 };
 

@@ -36,6 +36,17 @@ public:
 	explicit EthernetHeader(void* rhs);
 
 public:
+	property<DTO(EthernetHeader)> Raw{
+			_get
+			{
+				return _dto;
+			},
+			_set
+			{
+				_dto = value;
+			}
+	};
+
 	readonly<MAC> Destination{
 			_get
 			{
