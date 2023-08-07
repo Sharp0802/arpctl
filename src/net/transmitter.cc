@@ -89,3 +89,13 @@ void Transmitter::Transmit(const void* data, size_t size)
 	_rt_memcpy(buf.data(), data, size);
 	_q.push(buf);
 }
+
+Transmitter::Transmitter(std::shared_ptr<pcap_t> pcap) : _pcap(std::move(pcap))
+{
+	_instance = this;
+}
+
+Transmitter& Transmitter::GetInstance()
+{
+	return *_instance;
+}

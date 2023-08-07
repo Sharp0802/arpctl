@@ -43,15 +43,9 @@ private:
 	static Transmitter* _instance;
 
 public:
-	explicit Transmitter(std::shared_ptr<pcap_t> pcap) : _pcap(std::move(pcap))
-	{
-		_instance = this;
-	}
+	explicit Transmitter(std::shared_ptr<pcap_t> pcap);
 
-	static Transmitter& GetInstance()
-	{
-		return *_instance;
-	}
+	static Transmitter& GetInstance();
 
 public:
 	void Run(const volatile bool* token);
