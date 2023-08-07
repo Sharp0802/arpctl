@@ -5,7 +5,7 @@
 
 #include "framework.h"
 #include "property.h"
-#include "spinlock.h"
+#include "pstl/spinlock.h"
 
 class Worker
 {
