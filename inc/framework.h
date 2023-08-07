@@ -54,4 +54,6 @@
 /* INTRINSICS */
 #include "intrin/intrin.h"
 
+#define COMMENT false
+
 #endif //ARPCTL_FRAMEWORK_H

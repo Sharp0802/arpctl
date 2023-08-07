@@ -4,6 +4,8 @@
 #include "log.h"
 
 
+#if __AVX2__
+
 #define ymm(n) ymm##n
 #define decl_ymm(n) register __m256i ymm(n) __asm__(_STR(ymm(n)))
 
@@ -218,3 +220,5 @@ void* intrin::memcpy(void* __restrict dst, const void* __restrict src, size_t n)
 }
 
 #pragma GCC diagnostic pop
+
+#endif

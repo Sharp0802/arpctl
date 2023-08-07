@@ -1,6 +1,8 @@
 #ifndef ARPCTL_MEMCPY_H
 #define ARPCTL_MEMCPY_H
 
+#if __AVX2__
+
 namespace intrin
 {
 #pragma GCC diagnostic push
@@ -11,5 +13,11 @@ namespace intrin
 
 #pragma GCC diagnostic pop
 }
+
+#define _rt_memcpy intrin::memcpy
+
+#else
+#define _rt_memcpy std::memcpy
+#endif
 
 #endif //ARPCTL_MEMCPY_H
