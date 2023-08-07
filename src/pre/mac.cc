@@ -47,6 +47,7 @@ MAC::operator std::string_view() const
 MAC& MAC::operator=(const MAC& rhs)
 {
 	Raw = rhs.Raw.Get();
+	return *this;
 }
 
 uint8_t MAC::operator[](size_t i) const
