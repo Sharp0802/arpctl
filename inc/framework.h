@@ -51,4 +51,7 @@
 /* PCAP */
 #include <pcap.h>
 
+/* INTRINSICS */
+#include "intrin/intrin.h"
+
 #endif //ARPCTL_FRAMEWORK_H
