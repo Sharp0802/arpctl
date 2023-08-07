@@ -12,10 +12,15 @@
 #define ymm_load(src, ofs) ymm(ofs) = _mm256_loadu_si256(static_cast<const __m256i*>(src) + ofs)
 #define ymm_store(dst, ofs) _mm256_storeu_si256(static_cast<__m256i*>(dst) + ofs, ymm(ofs))
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-attributes"
+#else
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunknown-attributes"
+#pragma GCC diagnostic ignored_attributes "gnu::access"
+#endif
 
-[[gnu::always_inline, gnu::pure, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
+[[gnu::always_inline, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
 inline static void mov(void* __restrict dst, const void* __restrict src, size_t n) noexcept
 {
 	if (n & 8)
@@ -42,7 +47,7 @@ inline static void mov(void* __restrict dst, const void* __restrict src, size_t 
 	}
 }
 
-[[gnu::always_inline, gnu::pure, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
+[[gnu::always_inline, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
 inline static void mov16(void* __restrict dst, const void* __restrict src) noexcept
 {
 	__m128i xmm;
@@ -50,7 +55,7 @@ inline static void mov16(void* __restrict dst, const void* __restrict src) noexc
 	_mm_storeu_si128(static_cast<__m128i*>(dst), xmm);
 }
 
-[[gnu::always_inline, gnu::pure, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
+[[gnu::always_inline, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
 inline static void mov32(void* __restrict dst, const void* __restrict src) noexcept
 {
 	decl_ymm(0);
@@ -58,7 +63,7 @@ inline static void mov32(void* __restrict dst, const void* __restrict src) noexc
 	ymm_store(dst, 0);
 }
 
-[[gnu::always_inline, gnu::pure, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
+[[gnu::always_inline, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
 inline static void mov64(void* __restrict dst, const void* __restrict src) noexcept
 {
 	decl_ymm(0);
@@ -69,7 +74,7 @@ inline static void mov64(void* __restrict dst, const void* __restrict src) noexc
 	ymm_store(dst, 1);
 }
 
-[[gnu::always_inline, gnu::pure, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
+[[gnu::always_inline, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
 inline static void mov128(void* __restrict dst, const void* __restrict src) noexcept
 {
 	decl_ymm(0);
@@ -86,7 +91,7 @@ inline static void mov128(void* __restrict dst, const void* __restrict src) noex
 	ymm_store(dst, 3);
 }
 
-[[gnu::always_inline, gnu::pure, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
+[[gnu::always_inline, gnu::access(write_only, 1), gnu::access(read_only, 2)]]
 inline static void mov256(void* __restrict dst, const void* __restrict src) noexcept
 {
 	decl_ymm(0);
@@ -115,7 +120,7 @@ inline static void mov256(void* __restrict dst, const void* __restrict src) noex
 	ymm_store(dst, 7);
 }
 
-[[gnu::always_inline, gnu::pure, gnu::access(write_only, 1, 3), gnu::access(read_only, 2, 3)]]
+[[gnu::always_inline, gnu::access(write_only, 1, 3), gnu::access(read_only, 2, 3)]]
 inline static void mov512blk(void* __restrict dst, const void* __restrict src, size_t n) noexcept
 {
 	decl_ymm(0);
@@ -176,7 +181,7 @@ inline static void mov512blk(void* __restrict dst, const void* __restrict src, s
 	}
 }
 
-[[gnu::pure, gnu::access(write_only, 1, 3), gnu::access(read_only, 2, 3)]]
+[[gnu::access(write_only, 1, 3), gnu::access(read_only, 2, 3)]]
 void* intrin::memcpy(void* __restrict dst, const void* __restrict src, size_t n) noexcept
 {
 	mov512blk(dst, src, n);
@@ -219,6 +224,10 @@ void* intrin::memcpy(void* __restrict dst, const void* __restrict src, size_t n)
 	return dst;
 }
 
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else
 #pragma GCC diagnostic pop
+#endif
 
 #endif
