@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "log.h"
-#include "application.h"
+#include "iapplication.h"
 
 int main(int argc, char* argv[])
 {
@@ -12,15 +12,15 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		Application app(args);
+		IApplication app(args);
 		app.Start();
 		result = app.Join();
 		app.Abort();
 	}
 	catch (const std::exception& e)
 	{
-		LOG(CRIT) << "Application throws exception.\n"
-					 "Application will be terminated immediately\n"
+		LOG(CRIT) << "IApplication throws exception.\n"
+					 "IApplication will be terminated immediately\n"
 					 "===== EXCEPTION ====="
 				  << e.what();
 		result = Worker::State::EXCEPTION;
@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
 	if (result == Worker::State::EXCEPTION)
 	{
-		LOG(CRIT) << "Application exited with exception";
+		LOG(CRIT) << "IApplication exited with exception";
 		return -1;
 	}
 
