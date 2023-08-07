@@ -31,6 +31,18 @@ namespace pstl
 
 			return item;
 		}
+
+		std::optional<T> try_pop()
+		{
+			std::unique_lock lock(_sync);
+
+			if (_q.empty())
+				return std::nullopt;
+
+			auto item = _q.front();
+			_q.pop();
+			return item;
+		}
 	};
 }
 
