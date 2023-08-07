@@ -180,7 +180,7 @@ public:
 	readonly<uint16_t> Checksum {
 		_get
 		{
-			return _dto.chk;
+			return ntohs(_dto.chk);
 		}
 	};
 

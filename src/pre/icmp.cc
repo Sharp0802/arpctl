@@ -16,6 +16,6 @@ ICMP::ICMP(enum ICMP::Type type, enum ICMP::Code code, uint32_t data) :
 	UpdateChecksum();
 }
 
-ICMP::ICMP(const void* raw) : _raw(*reinterpret_cast<const DTO(ICMP)*>(raw))
+ICMP::ICMP(const void* raw) : _raw(*static_cast<const DTO(ICMP)*>(raw))
 {
 }
