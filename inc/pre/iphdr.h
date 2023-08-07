@@ -5,6 +5,7 @@
 #include "convention.h"
 #include "ip.h"
 #include "property.h"
+#include "net/checksum.h"
 
 
 decl_DTO(IPv4Header)
@@ -36,7 +37,26 @@ public:
 
 	explicit IPv4Header(void* raw);
 
+private:
+	[[gnu::always_inline]]
+	inline void UpdateChecksum()
+	{
+		_dto.chk = CalculateChecksum<IPv4Header>(&_dto);
+	}
+
 public:
+	property<DTO(IPv4Header)> Raw {
+		_get
+		{
+			return _dto;
+		},
+		_set
+		{
+			_dto = value;
+			UpdateChecksum();
+		}
+	};
+
 	property<uint8_t> Version {
 		_get
 		{
@@ -45,6 +65,7 @@ public:
 		_set
 		{
 			_dto.ver = value;
+			UpdateChecksum();
 		}
 	};
 
@@ -56,6 +77,7 @@ public:
 		_set
 		{
 			_dto.ihl = value;
+			UpdateChecksum();
 		}
 	};
 
@@ -67,6 +89,7 @@ public:
 		_set
 		{
 			_dto.dscp = value;
+			UpdateChecksum();
 		}
 	};
 
@@ -78,6 +101,7 @@ public:
 		_set
 		{
 			_dto.ecn = value;
+			UpdateChecksum();
 		}
 	};
 
@@ -89,6 +113,7 @@ public:
 		_set
 		{
 			_dto.len = htons(value);
+			UpdateChecksum();
 		}
 	};
 
@@ -100,6 +125,7 @@ public:
 		_set
 		{
 			_dto.id = htons(value);
+			UpdateChecksum();
 		}
 	};
 
@@ -111,6 +137,7 @@ public:
 		_set
 		{
 			_dto.flag = value;
+			UpdateChecksum();
 		}
 	};
 
@@ -122,6 +149,7 @@ public:
 		_set
 		{
 			_dto.fofs = htons(value);
+			UpdateChecksum();
 		}
 	};
 
@@ -133,6 +161,7 @@ public:
 		_set
 		{
 			_dto.ttl = value;
+			UpdateChecksum();
 		}
 	};
 
@@ -144,17 +173,14 @@ public:
 		_set
 		{
 			_dto.prtcl = value;
+			UpdateChecksum();
 		}
 	};
 
-	property<uint16_t> Checksum {
+	readonly<uint16_t> Checksum {
 		_get
 		{
 			return _dto.chk;
-		},
-		_set
-		{
-			_dto.chk = value;
 		}
 	};
 
@@ -166,6 +192,7 @@ public:
 		_set
 		{
 			_dto.sip = value.Raw.Get();
+			UpdateChecksum();
 		}
 	};
 
@@ -177,6 +204,7 @@ public:
 		_set
 		{
 			_dto.dip = value.Raw.Get();
+			UpdateChecksum();
 		}
 	};
 };
