@@ -17,11 +17,13 @@ std::vector<uint8_t> IPv4Packet::GetRaw() const noexcept
 
 	auto eth = _eth.Raw.Get();
 	auto ipv4 = _ipv4.Raw.Get();
+	if (ipv4.len == IPv4Header::Auto)
+		ipv4.len = htons(sizeof(ipv4));
 
 	_rt_memcpy(data.data(), &eth, sizeof(eth));
 	_rt_memcpy(data.data() + sizeof(eth), &ipv4, sizeof(ipv4));
 
-	return data;
+	return { data };
 }
 
 size_t IPv4Packet::GetSize() const noexcept

@@ -22,7 +22,9 @@ enum IPacket::Type ICMPPacket::GetType() const noexcept
 std::vector<uint8_t> ICMPPacket::GetRaw() const noexcept
 {
 	std::vector<uint8_t> data(IPv4Packet::GetRaw());
-	reinterpret_cast<DTO(IPv4Header)*>(&data[IPv4Packet::GetSize() - sizeof(DTO(IPv4Header))])->len = htons(GetSize() - sizeof(DTO(EthernetHeader)));
+	auto* pl = &reinterpret_cast<DTO(IPv4Header)*>(&data[IPv4Packet::GetSize() - sizeof(DTO(IPv4Header))])->len;
+	if (*pl == IPv4Header::Auto)
+		*pl = htons(GetSize() - sizeof(DTO(EthernetHeader)));
 	data.resize(GetSize());
 
 	std::cout << _payload.data() << '\n';
