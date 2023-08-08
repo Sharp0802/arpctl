@@ -31,7 +31,7 @@ public:
 
 	EthernetHeader(const EthernetHeader& rhs) = default;
 
-	explicit EthernetHeader(MAC dmac, MAC smac, uint16_t type);
+	explicit EthernetHeader(const MAC& dmac, const MAC& smac, EtherType type);
 
 	explicit EthernetHeader(void* rhs);
 

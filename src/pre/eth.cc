@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "pre/eth.h"
 
-EthernetHeader::EthernetHeader() : _dto({ MAC::Unknown, MAC::Unknown, 0 })
+EthernetHeader::EthernetHeader() : _dto({ MAC::UnknownDTO, MAC::UnknownDTO, 0 })
 {
 }
 
-EthernetHeader::EthernetHeader(MAC dmac, MAC smac, uint16_t type) : _dto({ dmac.Raw.Get(), smac.Raw.Get(), htons(type) })
+EthernetHeader::EthernetHeader(const MAC& dmac, const MAC& smac, EtherType type) :
+		_dto({ dmac.Raw.Get(), smac.Raw.Get(), htons(static_cast<uint16_t>(type)) })
 {
 }
 
