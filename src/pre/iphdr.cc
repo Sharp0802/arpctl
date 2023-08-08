@@ -23,7 +23,7 @@ IPv4Header::IPv4Header(void* raw) : _dto(*static_cast<DTO(IPv4Header)*>(raw))
  * computing the checksum, the value of the checksum field is zero.
  *
  * */
-uint16_t IPv4Header::CalculateChecksum() noexcept
+uint16_t IPv4Header::CalculateChecksum() const noexcept
 {
 	thread_local union
 	{
@@ -36,8 +36,9 @@ uint16_t IPv4Header::CalculateChecksum() noexcept
 
 	uint16_t r = 0;
 	for (uint16_t i : buf.u16)
-		intrin::_mm_add_1cmpl(&r, i);
-	return r;
+		r += i;
+
+	return ~r;
 }
 
 void IPv4Header::UpdateChecksum()

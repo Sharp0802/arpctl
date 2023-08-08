@@ -5,6 +5,7 @@
 #include "convention.h"
 #include "property.h"
 #include "ichecksumable.h"
+#include "log.h"
 
 
 decl_DTO(ICMP)
@@ -97,8 +98,11 @@ public:
 
 	explicit ICMP(const void* raw);
 
+protected:
+	uint16_t CalculateChecksum() const noexcept override;
+
 public:
-	uint16_t CalculateChecksum() noexcept override;
+	uint16_t CalculateChecksumWith(std::vector<uint8_t> payload) const noexcept;
 
 private:
 	void UpdateChecksum() noexcept;

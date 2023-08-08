@@ -38,37 +38,24 @@ TCP::TCP(const IPv4Header& iphdr, const void* raw) :
  * header.
  *
  * */
-uint16_t TCP::CalculateChecksum() noexcept
+uint16_t TCP::CalculateChecksum() const noexcept
 {
-	thread_local union
-	{
-		DTO(TCP) dto;
-		uint16_t u16[sizeof(dto) / 2];
-	} tcp;
+	thread_local struct {
+		DTO(TCP) tcp;
+		DTO(PseudoIPv4Header) pip;
+	} data;
 
-	_rt_memcpy(&tcp, &_dto, sizeof(tcp));
-	tcp.dto.chk = 0;
-
-	thread_local union
-	{
-		DTO(PseudoIPv4Header) dto;
-		uint16_t u16[sizeof(dto) / 2];
-	} pip;
+	_rt_memcpy(&data.tcp, &_dto, sizeof(data.tcp));
+	data.tcp.chk = 0;
 
 	auto ip = _ip.Raw.Get();
 
-	pip.dto.sip = ip.sip;
-	pip.dto.dip = ip.dip;
-	pip.dto.prtcl = ip.prtcl;
-	pip.dto.len = ip.len - sizeof(DTO(IPv4Header));
+	data.pip.sip = ip.sip;
+	data.pip.dip = ip.dip;
+	data.pip.prtcl = ip.prtcl;
+	data.pip.len = ip.len - sizeof(DTO(IPv4Header));
 
-	uint16_t r = 0;
-	for (uint16_t i : tcp.u16)
-		intrin::_mm_add_1cmpl(&r, i);
-	for (uint16_t i : pip.u16)
-		intrin::_mm_add_1cmpl(&r, i);
-
-	return r;
+	return intrin::rfc1071(&data, sizeof(data));
 }
 
 void TCP::UpdateChecksum() noexcept

@@ -10,23 +10,41 @@
 
 decl_DTO(IPv4Header)
 {
-	uint8_t ver: 4;
+	/*
+	 * I don't know why I should swap ihl and ver.
+	 * If you know, Please contact me.
+	 */
 	uint8_t ihl: 4;
+	uint8_t ver: 4;
 	uint8_t dscp: 6;
 	uint8_t ecn: 2;
 	uint16_t len;
+
 	uint16_t id;
-	uint16_t flag: 3;
-	uint16_t fofs: 13;
+	uint16_t ffofs;
+
 	uint8_t ttl;
 	uint8_t prtcl;
 	uint16_t chk;
+
 	DTO(IP) sip;
 	DTO(IP) dip;
 };
 
 class IPv4Header final : public IChecksumable
 {
+public:
+	enum class Protocol : std::uint8_t
+	{
+		ICMP = 1,
+
+		// RFC 3692
+		Test0 = 253,
+		Test1 = 254
+	};
+
+	static constexpr uint16_t Auto = -1;
+
 private:
 	DTO(IPv4Header) _dto;
 
@@ -38,7 +56,8 @@ public:
 	explicit IPv4Header(void* raw);
 
 public:
-	uint16_t CalculateChecksum() noexcept override;
+	[[nodiscard]]
+	uint16_t CalculateChecksum() const noexcept override;
 
 private:
 	void UpdateChecksum();
@@ -131,11 +150,12 @@ public:
 	property<uint8_t> Flags {
 		_get
 		{
-			return _dto.flag;
+			return ntohs(_dto.ffofs & htons(0b11100000'00000000)) >> 13;
 		},
 		_set
 		{
-			_dto.flag = value;
+			_dto.ffofs &= htons(0b00011111'11111111);
+			_dto.ffofs |= htons(static_cast<uint16_t>(value) << 13);
 			UpdateChecksum();
 		}
 	};
@@ -143,11 +163,12 @@ public:
 	property<uint16_t> FragOffset {
 		_get
 		{
-			return ntohs(_dto.fofs);
+			return ntohs(_dto.ffofs & htons(0b00011111'11111111));
 		},
 		_set
 		{
-			_dto.fofs = htons(value);
+			_dto.ffofs &= htons(0b11100000'00000000);
+			_dto.ffofs |= htons(value & 0b00011111'11111111);
 			UpdateChecksum();
 		}
 	};
@@ -164,14 +185,14 @@ public:
 		}
 	};
 
-	property<uint8_t> Protocol {
+	property<Protocol> Protocol {
 		_get
 		{
-			return _dto.prtcl;
+			return static_cast<enum Protocol>(_dto.prtcl);
 		},
 		_set
 		{
-			_dto.prtcl = value;
+			_dto.prtcl = static_cast<uint8_t>(value);
 			UpdateChecksum();
 		}
 	};

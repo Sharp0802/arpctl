@@ -28,22 +28,23 @@ ICMP::ICMP(const void* raw) : _raw(*static_cast<const DTO(ICMP)*>(raw))
  * the ICMP header and data with value 0 substituted for this field
  *
  * */
-uint16_t ICMP::CalculateChecksum() noexcept
+uint16_t ICMP::CalculateChecksum() const noexcept
 {
-	thread_local union
-	{
-		DTO(ICMP) dto;
-		uint16_t u16[sizeof(dto) / 2];
-	} buf;
+	decltype(_raw) c = _raw;
+	c.chk = 0;
+	return intrin::rfc1071(&c, sizeof(_raw));
+}
 
-	_rt_memcpy(&buf, &_raw, sizeof(buf));
-	buf.dto.chk = 0;
+uint16_t ICMP::CalculateChecksumWith(std::vector<uint8_t> payload) const noexcept
+{
+	std::vector<uint8_t> p;
+	p.resize(sizeof(_raw) + payload.size());
 
-	uint16_t r = 0;
-	for (uint16_t i : buf.u16)
-		intrin::_mm_add_1cmpl(&r, i);
+	_rt_memcpy(&p[0], &_raw, sizeof(_raw));
+	_rt_memcpy(&p[sizeof(_raw)], payload.data(), payload.size());
+	reinterpret_cast<decltype(_raw)*>(&p[0])->chk = 0;
 
-	return r;
+	return intrin::rfc1071(p.data(), p.size());
 }
 
 void ICMP::UpdateChecksum() noexcept

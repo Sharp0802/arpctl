@@ -55,7 +55,8 @@ public:
 	explicit TCP(const IPv4Header& iphdr, const void* raw);
 
 public:
-	uint16_t CalculateChecksum() noexcept override;
+	[[nodiscard]]
+	uint16_t CalculateChecksum() const noexcept override;
 
 private:
 	void UpdateChecksum() noexcept;

@@ -5,7 +5,8 @@
 class IChecksumable
 {
 public:
-	virtual uint16_t CalculateChecksum() noexcept = 0;
+	[[nodiscard]]
+	virtual uint16_t CalculateChecksum() const noexcept = 0;
 };
 
 
