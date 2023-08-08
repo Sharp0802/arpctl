@@ -14,7 +14,7 @@ void Worker::Start()
 {
 	std::lock_guard lock(_mutex);
 
-	if (_worker->joinable())
+	if (_worker && _worker->joinable())
 	{
 		pthread_t pth = _worker->native_handle();
 		pthread_cancel(pth);
@@ -45,7 +45,7 @@ void Worker::Stop()
 
 void Worker::Join()
 {
-	if (_worker->joinable())
+	if (_worker && _worker->joinable())
 	{
 		_worker->join();
 	}
@@ -56,7 +56,7 @@ void Worker::Abort()
 	std::lock_guard lock(_mutex);
 
 	_token = false;
-	if (_worker->joinable())
+	if (_worker && _worker->joinable())
 	{
 		pthread_t pth = _worker->native_handle();
 		pthread_cancel(pth);
