@@ -1,19 +1,19 @@
 #ifndef ARPCTL_MEMCPY_H
 #define ARPCTL_MEMCPY_H
 
-#if __AVX2__
+#if USE_INTRINSICS
 
 namespace intrin
 {
 #ifdef __clang__
-	#pragma clang diagnostic push
+#pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-attributes"
 #else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored_attributes "gnu::access"
 #endif
 
-	[[gnu::pure, gnu::access(write_only, 1, 3), gnu::access(read_only, 2, 3)]]
+	[[gnu::access(write_only, 1, 3), gnu::access(read_only, 2, 3)]]
 	void* memcpy(void* dst, const void* src, size_t n) noexcept;
 
 #ifdef __clang__

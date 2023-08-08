@@ -4,7 +4,7 @@
 #include "log.h"
 
 
-#if __AVX2__
+#if USE_INTRINSICS
 
 #define ymm(n) ymm##n
 #define decl_ymm(n) register __m256i ymm(n) __asm__(_STR(ymm(n)))
