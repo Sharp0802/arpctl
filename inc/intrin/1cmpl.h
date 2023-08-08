@@ -33,8 +33,8 @@ namespace intrin
 	[[gnu::always_inline]]
 	inline void _mm_add_1cmpl(uint16_t* r, uint16_t b) noexcept
 	{
-		uint16_t c = *r + b;
-		*r = (c & 0xFF) + (c >> 16);
+		uint32_t c = *r + b;
+		*r = (c & 0xFFFF) + (c >> 16);
 	}
 }
 
