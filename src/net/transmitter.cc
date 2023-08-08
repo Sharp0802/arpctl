@@ -5,6 +5,8 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 
+Transmitter* Transmitter::_instance = nullptr;
+
 std::optional<size_t> Fragment::MTU(std::string_view interface)
 {
 	int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
@@ -46,11 +48,11 @@ std::vector<uint8_t> Fragment::Resolve() const
 	// COPY HEADER
 	for (size_t i = 0; i < Count(); ++i)
 	{
-		std::memcpy(_buffer.data() + _mtu * i, _data.data(), ofs);
+		std::memcpy(_buffer.data() + _mtu * i, _payload.data(), ofs);
 	}
 
 	// FRAG PAYLOAD
-	const uint8_t* payload = &_data[ofs];
+	const uint8_t* payload = &_payload[ofs];
 	for (size_t i = 0; i < Count(); ++i)
 	{
 		std::memcpy(_buffer.data() + _mtu * i + ofs, payload + (_mtu - ofs) * i, _mtu - ofs);
@@ -66,12 +68,16 @@ void Transmitter::Run(volatile const bool* token)
 	while (*token)
 	{
 		auto opt = _q.try_pop();
-		if (!opt) sched_yield();
+		if (!opt)
+		{
+			sched_yield();
+			continue;
+		}
 		auto& data = opt.value();
 
 		auto r = pcap_inject(_pcap.get(), data.data(), data.size());
 		if (r == PCAP_ERROR)
-			LOG(FAIL) << "could not inject packet";
+			LOG(FAIL) << "could not inject packet (" << pcap_geterr(_pcap.get()) << ')';
 		else
 			LOG(VERB) << "packet sent (" << data.size() << " requested, " << r << " sent)";
 	}
