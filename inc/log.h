@@ -65,8 +65,8 @@ public:
 		while ((p = strchr(window, '\n')))
 		{
 			*p = 0;
-			_buf << window << '\n' << std::string(' ', _pad);
-			window = p;
+			_buf << window << '\n' << std::string(_pad, ' ');
+			window = p + 1;
 		}
 		_buf << window;
 
@@ -85,8 +85,8 @@ public:
 		while ((p = strchr(window, '\n')))
 		{
 			*p = 0;
-			_buf << window << '\n' << std::string(' ', _pad);
-			window = p;
+			_buf << window << '\n' << std::string(_pad, ' ');
+			window = p + 1;
 		}
 		_buf << window;
 
