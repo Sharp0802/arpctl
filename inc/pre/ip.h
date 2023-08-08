@@ -31,10 +31,15 @@ public:
 
 	IP(const IP& rhs);
 
+	explicit IP(DTO(IP) dto);
+
 	explicit IP(void* raw);
 
 	[[nodiscard]]
 	static std::optional<IP> From(const std::string_view& str);
+
+	[[nodiscard]]
+	static std::optional<IP> Self(const std::string_view& interface);
 
 public:
 	property<DTO(IP)> Raw{

@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "pre/ip.h"
+#include "log.h"
+#include <ifaddrs.h>
 
 IP::IP() : _dto({ 0, 0, 0, 0 })
 {
@@ -12,7 +14,11 @@ IP::IP(const IP& rhs)
 
 IP::IP(void* raw)
 {
-	std::memcpy(&_dto, raw, sizeof(DTO(IP)));
+	_rt_memcpy(&_dto, raw, sizeof(DTO(IP)));
+}
+
+IP::IP(DTO(IP) dto) : _dto(dto)
+{
 }
 
 std::optional<IP> IP::From(const std::string_view& str)
@@ -21,7 +27,7 @@ std::optional<IP> IP::From(const std::string_view& str)
 
 	if (str.size() > 15)
 		return std::nullopt;
-	std::memcpy(buffer.data(), str.data(), 15);
+	_rt_memcpy(buffer.data(), str.data(), 15);
 
 	DTO(IP) dto{};
 	for (size_t r = 0, i = 0, seg = 0; i < 15; ++i)
@@ -36,6 +42,34 @@ std::optional<IP> IP::From(const std::string_view& str)
 	}
 
 	return IP(&dto);
+}
+
+std::optional<IP> IP::Self(const std::string_view& interface)
+{
+	ifaddrs* addr;
+	auto r = getifaddrs(&addr);
+	if (r) return std::nullopt;
+	ifaddrs* taddr = addr;
+
+	bool init = false;
+	DTO(IP) raw{};
+	do
+	{
+
+		std::memcpy(raw.seg, &addr->ifa_addr->sa_data[2], 4);
+		LOG(VERB) << "local IP detected: " << addr->ifa_name << ' ' << static_cast<std::string_view>(IP(raw));
+		auto mask = static_cast<u_char>(addr->ifa_addr->sa_data[2]);
+		if (interface == addr->ifa_name && (mask <= 223))
+		{
+			init = true;
+			if (mask == 192 || mask == 172) // common masks
+				break;
+		}
+	} while ((addr = addr->ifa_next));
+
+	freeifaddrs(taddr);
+
+	return init ? std::make_optional(IP(raw)) : std::nullopt;
 }
 
 IP::operator std::string_view() const

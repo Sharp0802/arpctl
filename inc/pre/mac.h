@@ -43,8 +43,14 @@ public:
 	uint8_t operator[](size_t i) const;
 
 public:
-	inline static DTO(MAC) Unknown = { 0, 0, 0, 0, 0, 0 };
-	inline static DTO(MAC) Broadcast = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+	static std::optional<MAC> Self(const std::string_view& interface);
+
+public:
+	inline static DTO(MAC) UnknownDTO = { 0, 0, 0, 0, 0, 0 };
+	inline static DTO(MAC) BroadcastDTO = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+	static MAC Unknown;
+	static MAC Broadcast;
 };
 
 

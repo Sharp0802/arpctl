@@ -1,5 +1,11 @@
+#include <sys/ioctl.h>
+#include <net/if.h>
 #include "pch.h"
 #include "pre/mac.h"
+
+
+MAC MAC::Unknown { &MAC::UnknownDTO };
+MAC MAC::Broadcast { &MAC::BroadcastDTO };
 
 [[nodiscard]]
 static consteval std::array<char, 16> GetHexTable()
@@ -13,6 +19,7 @@ static consteval std::array<char, 16> GetHexTable()
 	return buf;
 }
 
+[[gnu::access(write_only, 1)]]
 static void DumpHex(char* dst, uint8_t src)
 {
 	std::array<char, 16> vt = GetHexTable();
@@ -53,4 +60,20 @@ MAC& MAC::operator=(const MAC& rhs)
 uint8_t MAC::operator[](size_t i) const
 {
 	return _dto.seg[i];
+}
+
+std::optional<MAC> MAC::Self(const std::string_view& interface)
+{
+	int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+	if (fd == -1) return std::nullopt;
+
+	struct ifreq ifr{};
+	_rt_memcpy(ifr.ifr_name, interface.data(), interface.size());
+	ioctl(fd, SIOCGIFHWADDR, &ifr);
+	close(fd);
+
+	DTO(MAC) mac{};
+	std::memcpy(&mac, ifr.ifr_hwaddr.sa_data, 6);
+
+	return std::make_optional(MAC(&mac));
 }
