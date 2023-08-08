@@ -18,6 +18,7 @@ public:
 
 private:
 	ICMP _icmp;
+	std::vector<uint8_t> _payload;
 
 public:
 	ICMPPacket() = delete;
@@ -35,6 +36,32 @@ public:
 
 	[[nodiscard]]
 	size_t GetSize() const noexcept override;
+
+public:
+	template<typename T>
+	ICMPPacket& operator<<(T arg)
+	{
+		_payload.push_back(arg);
+		return *this;
+	}
+
+	template<typename T, size_t N>
+	ICMPPacket& operator<<(T argv[N])
+	{
+		_payload.reserve(_payload.size() + N);
+		for (size_t i = 0; i < N; ++i)
+			_payload.push_back(argv[i]);
+		return *this;
+	}
+
+	ICMPPacket& operator<<(const char* str)
+	{
+		auto size = strlen(str);
+		_payload.reserve(_payload.size() + size);
+		for (size_t i = 0; i < size; ++i)
+			_payload.push_back(str[i]);
+		return *this;
+	}
 };
 
 
