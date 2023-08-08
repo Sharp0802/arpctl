@@ -18,12 +18,6 @@ public:
 	}
 
 public:
-	const __property<T>& operator=(T& rhs) const // NOLINT(*-unconventional-assign-operator)
-	{
-		_setter(rhs);
-		return *this;
-	}
-
 	const __property<T>& operator=(T rhs) const // NOLINT(*-unconventional-assign-operator)
 	{
 		_setter(rhs);
@@ -55,12 +49,16 @@ public:
 };
 
 template<typename T>
-using property = const __property<T>;
+using property = __property<T>;
 
 template<typename T>
 using readonly = const __readonly<T>;
 
 #define _get [this]() -> auto
 #define _set [this](auto& value) -> void
+
+
+#define _static_get []() -> auto
+#define _static_set [](auto& value) -> void
 
 #endif //ARPCTL_PROPERTY_H
