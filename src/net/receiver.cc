@@ -2,6 +2,97 @@
 #include "net/receiver.h"
 #include "net/network_error.h"
 #include "log.h"
+#include "pre/arphdr.h"
+#include "pre/icmp.h"
+#include "pre/iphdr.h"
+#include "pre/tcp.h"
+
+EthernetHeader& HeaderSet::Ethernet() const noexcept
+{
+	return *_eth;
+}
+
+IPv4Header& HeaderSet::IPv4() const noexcept
+{
+	return *_ipv4;
+}
+
+ARPHeader& HeaderSet::ARP() const noexcept
+{
+	return *_arp;
+}
+
+ICMP& HeaderSet::ICMP() const noexcept
+{
+	return *_icmp;
+}
+
+TCP& HeaderSet::TCP() const noexcept
+{
+	return *_tcp;
+}
+
+std::optional<HeaderSet> HeaderSet::ParseFrom(const OctetStream& data) noexcept
+{
+	size_t ofs = 0;
+
+	auto ethDTO = data.As<DTO(EthernetHeader)>(ofs);
+	if (!ethDTO) return std::nullopt;
+	auto eth = std::make_shared<EthernetHeader>(ethDTO);
+	ofs += sizeof(DTO(EthernetHeader));
+
+	if (eth->Type.Get() == EthernetHeader::EtherType::IPv4)
+	{
+		auto ipDTO = data.As<DTO(IPv4Header)>(ofs);
+		if (!ipDTO) return std::nullopt;
+		auto ip = std::make_shared<IPv4Header>(ipDTO);
+		ofs += sizeof(DTO(IPv4Header));
+
+		switch (ip->Protocol.Get())
+		{
+		case IPv4Header::Protocol::ICMP:
+		{
+			auto icmpDTO = data.As<DTO(ICMP)>(ofs);
+			if (!icmpDTO) return std::nullopt;
+			auto icmp = std::make_shared<::ICMP>(icmpDTO);
+			ofs += sizeof(DTO(ICMP));
+
+			return HeaderSet(eth, ip, icmp);
+		}
+		case IPv4Header::Protocol::TCP:
+		{
+			auto tcpDTO = data.As<DTO(TCP)>(ofs);
+			if (!tcpDTO) return std::nullopt;
+			auto tcp = std::make_shared<::TCP>(*ip, tcpDTO);
+			ofs += sizeof(DTO(TCP));
+
+			return HeaderSet(eth, ip, tcp);
+		}
+		default:
+		{
+			return HeaderSet(eth, ip);
+		}
+		}
+	}
+	else if (eth->Type.Get() == EthernetHeader::EtherType::ARP)
+	{
+		auto arpDTO = data.As<DTO(ARPHeader)>(ofs);
+		if (!arpDTO) return std::nullopt;
+		auto arp = std::make_shared<ARPHeader>(arpDTO);
+		ofs += sizeof(DTO(ARPHeader));
+
+		return HeaderSet(eth, arp);
+	}
+	else
+	{
+		return HeaderSet(eth);
+	}
+}
+
+HeaderSet::SpecialType HeaderSet::Type() const noexcept
+{
+	return _type;
+}
 
 void Receiver::Run(volatile const bool* token) const
 {
@@ -25,19 +116,19 @@ void Receiver::Run(volatile const bool* token) const
 		default:
 			if (hdr->caplen < sizeof(DTO(EthernetHeader)))
 				break;
-			Handle(hdr->caplen, data);
+			OctetStream stream(data, hdr->caplen);
+			auto set = HeaderSet::ParseFrom(stream);
+			if (!set)
+			{
+				LOG(WARN) << "invalid packet data detected. receiver will drop it.\n"
+							 "=== PACKET DATA OPEN ===\n"
+						  << static_cast<std::string_view>(stream)
+						  << "\n=== PACKET DATA CLOSE ===";
+				break;
+			}
+
+			_received(set.value(), stream);
 			break;
 		}
 	}
-}
-
-void Receiver::Handle(size_t size, const uint8_t* data) const
-{
-	EthernetHeader eth(const_cast<uint8_t*>(data));
-
-	std::vector<uint8_t> buf;
-	buf.resize(size - sizeof(EthernetHeader));
-	std::memcpy(buf.data(), data + sizeof(EthernetHeader), buf.size());
-
-	_received(eth, buf);
 }
