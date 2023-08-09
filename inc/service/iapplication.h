@@ -9,7 +9,7 @@ class IApplication
 {
 public:
 	virtual ~IApplication();
-
+	
 	virtual bool Configure(const std::vector<std::string_view>& argv) = 0;
 
 	virtual void Start() = 0;
