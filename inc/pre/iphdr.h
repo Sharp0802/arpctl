@@ -37,7 +37,7 @@ public:
 	enum class Protocol : std::uint8_t
 	{
 		ICMP = 1,
-
+		TCP = 6,
 		// RFC 3692
 		Test0 = 253,
 		Test1 = 254

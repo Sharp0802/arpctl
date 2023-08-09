@@ -99,9 +99,11 @@ public:
 	explicit ICMP(const void* raw);
 
 protected:
+	[[nodiscard]]
 	uint16_t CalculateChecksum() const noexcept override;
 
 public:
+	[[nodiscard]]
 	uint16_t CalculateChecksumWith(std::vector<uint8_t> payload) const noexcept;
 
 private:
