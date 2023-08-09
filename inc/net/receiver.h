@@ -117,17 +117,17 @@ public:
 	}
 
 public:
-	[[nodiscard]] EthernetHeader& Ethernet() const noexcept;
+	[[nodiscard]] EthernetHeader& GetEthernetHeader() const noexcept;
 
-	[[nodiscard]] IPv4Header& IPv4() const noexcept;
+	[[nodiscard]] IPv4Header& GetIPv4Header() const noexcept;
 
-	[[nodiscard]] ARPHeader& ARP() const noexcept;
+	[[nodiscard]] ARPHeader& GetARP() const noexcept;
 
-	[[nodiscard]] ICMP& ICMP() const noexcept;
+	[[nodiscard]] ICMP& GetICMP() const noexcept;
 
-	[[nodiscard]] TCP& TCP() const noexcept;
+	[[nodiscard]] TCP& GetTCP() const noexcept;
 
-	[[nodiscard]] SpecialType Type() const noexcept;
+	[[nodiscard]] SpecialType GetType() const noexcept;
 
 public:
 	[[nodiscard, gnu::pure]]

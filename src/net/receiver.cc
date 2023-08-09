@@ -7,27 +7,27 @@
 #include "pre/iphdr.h"
 #include "pre/tcp.h"
 
-EthernetHeader& HeaderSet::Ethernet() const noexcept
+EthernetHeader& HeaderSet::GetEthernetHeader() const noexcept
 {
 	return *_eth;
 }
 
-IPv4Header& HeaderSet::IPv4() const noexcept
+IPv4Header& HeaderSet::GetIPv4Header() const noexcept
 {
 	return *_ipv4;
 }
 
-ARPHeader& HeaderSet::ARP() const noexcept
+ARPHeader& HeaderSet::GetARP() const noexcept
 {
 	return *_arp;
 }
 
-ICMP& HeaderSet::ICMP() const noexcept
+ICMP& HeaderSet::GetICMP() const noexcept
 {
 	return *_icmp;
 }
 
-TCP& HeaderSet::TCP() const noexcept
+TCP& HeaderSet::GetTCP() const noexcept
 {
 	return *_tcp;
 }
@@ -89,7 +89,7 @@ std::optional<HeaderSet> HeaderSet::ParseFrom(const OctetStream& data) noexcept
 	}
 }
 
-HeaderSet::SpecialType HeaderSet::Type() const noexcept
+HeaderSet::SpecialType HeaderSet::GetType() const noexcept
 {
 	return _type;
 }
