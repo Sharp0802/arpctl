@@ -66,3 +66,11 @@ OctetStream& OctetStream::operator+=(const OctetStream& rhs)
 		_size += rhs._size;
 	}
 }
+
+OctetStream::operator std::string_view() const
+{
+	std::vector<char> buf(2 * _size);
+	for (size_t i = 0; i < _size; ++i)
+		std::snprintf(&buf[i * 2], 2, "%02hX", _data[i]);
+	return { std::string(buf.data()) };
+}

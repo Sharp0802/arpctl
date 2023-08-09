@@ -37,15 +37,19 @@ public:
 
 	template<typename T>
 	[[nodiscard]]
-	T& __As(size_t offset) const noexcept
+	T* __As(size_t offset) const noexcept
 	{
-		return *reinterpret_cast<T*>(_data + offset);
+		return (offset + sizeof(T) > _size)
+			   ? nullptr
+			   : reinterpret_cast<T*>(_data + offset);
 	}
 
 public:
 	OctetStream& operator=(const OctetStream& rhs) = delete;
 
 	OctetStream& operator+=(const OctetStream& rhs);
+
+	explicit operator std::string_view() const;
 };
 
 #define As template __As
