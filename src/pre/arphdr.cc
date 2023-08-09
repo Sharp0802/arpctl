@@ -23,6 +23,8 @@ uint8_t ARPHeader::GetProtocolTypeSize(ARPHeader::ProtocolType type)
 
 ARPHeader::ARPHeader() : _dto({})
 {
+	_dto.hlen = GetHardwareTypeSize(Hardware.Get());
+	_dto.plen = GetProtocolTypeSize(Protocol.Get());
 }
 
 ARPHeader::ARPHeader(const ARPHeader& rhs) : _dto(rhs._dto)

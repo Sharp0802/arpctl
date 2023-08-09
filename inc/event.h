@@ -16,7 +16,7 @@ private:
 	std::function<void(Args...)> _fn;
 
 public:
-	explicit EventHandler(std::function<void(Args...)> fn) : _fn(fn), ID(_gID++)
+	explicit EventHandler(std::function<void(Args...)> fn) : ID(_gID++), _fn(fn)
 	{
 	}
 
