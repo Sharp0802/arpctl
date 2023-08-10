@@ -36,6 +36,8 @@ public:
 
 	void Join();
 
+	std::future_status Join(std::chrono::milliseconds timeout);
+
 	void Abort();
 
 public:

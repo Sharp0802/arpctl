@@ -21,11 +21,11 @@ void Worker::Start()
 	}
 
 	_token = true;
+	_state = State::OCCUPIED;
 	_worker = new std::thread([this](const volatile bool* token)
 	{
 		try
 		{
-			_state = State::OCCUPIED;
 			_fn(token);
 			_state = State::COMPLETED;
 		}
@@ -51,6 +51,17 @@ void Worker::Join()
 	}
 }
 
+std::future_status Worker::Join(std::chrono::milliseconds timeout)
+{
+	std::lock_guard lock(_mutex);
+
+	if (!_worker || !_worker->joinable())
+		return std::future_status::ready;
+
+	auto wait = std::async(std::launch::async, [this]() { _worker->join(); });
+	return wait.wait_for(timeout);
+}
+
 void Worker::Abort()
 {
 	std::lock_guard lock(_mutex);
@@ -61,6 +72,7 @@ void Worker::Abort()
 		pthread_t pth = _worker->native_handle();
 		pthread_cancel(pth);
 	}
+	_state = State::COMPLETED;
 }
 
 Worker::Worker(std::function<void(volatile const bool*)> fn) :
