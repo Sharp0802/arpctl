@@ -136,11 +136,15 @@ public:
 
 class Receiver final
 {
+public:
+	using EventType = Event<const HeaderSet&, const OctetStream&>;
+	using HandlerType = Event<const HeaderSet&, const OctetStream&>::Handler;
+
 private:
 	inline static Receiver* _instance;
 
 	std::shared_ptr<pcap_t> _pcap;
-	Event<const HeaderSet&, const OctetStream&> _received;
+	EventType _received;
 
 public:
 	explicit Receiver(std::shared_ptr<pcap_t> pcap) : _pcap(std::move(pcap))
@@ -154,12 +158,12 @@ public:
 	}
 
 public:
-	void operator+=(decltype(_received)::Handler handler)
+	void operator+=(HandlerType handler)
 	{
 		_received += std::move(handler);
 	}
 
-	void operator-=(decltype(_received)::Handler handler)
+	void operator-=(HandlerType handler)
 	{
 		_received -= std::move(handler);
 	}

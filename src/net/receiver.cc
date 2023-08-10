@@ -64,7 +64,7 @@ std::optional<HeaderSet> HeaderSet::ParseFrom(const OctetStream& data) noexcept
 			auto tcpDTO = data.As<DTO(TCP)>(ofs);
 			if (!tcpDTO) return std::nullopt;
 			auto tcp = std::make_shared<::TCP>(*ip, tcpDTO);
-			ofs += sizeof(DTO(TCP));
+			ofs += tcp->DataOffset.Get();
 
 			return HeaderSet(eth, ip, tcp);
 		}
