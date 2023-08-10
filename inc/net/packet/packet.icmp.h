@@ -7,15 +7,6 @@
 
 class ICMPPacket final : protected IPv4Packet
 {
-public:
-	enum class Type
-	{
-		ARP,
-		ICMP,
-		IPv4,
-		TCP
-	};
-
 private:
 	ICMP _icmp;
 	std::vector<uint8_t> _payload;
