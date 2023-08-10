@@ -11,8 +11,21 @@ decl_DTO(IP)
 	uint8_t seg[4];
 };
 
+class IP;
+
+namespace std
+{
+	template<>
+	struct less<IP>
+	{
+		constexpr bool operator()(const IP& x, const IP& y) const;
+	};
+}
+
 class IP final
 {
+	friend struct std::less<IP>;
+
 public:
 	enum class Class : uint8_t
 	{
@@ -40,6 +53,9 @@ public:
 
 	[[nodiscard]]
 	static std::optional<IP> Self(const std::string_view& interface);
+
+	[[nodiscard]]
+	static std::optional<IP> Self();
 
 public:
 	property<DTO(IP)> Raw{
@@ -73,8 +89,20 @@ public:
 
 	IP& operator=(const IP& rhs);
 
+	bool operator ==(const IP& rhs);
+
 	uint8_t operator[](size_t i) const;
 };
+
+constexpr bool std::less<IP>::operator()(const IP& x, const IP& y) const
+{
+	for (size_t i = 0; i < 4; ++i)
+		if (x._dto.seg[i] < y._dto.seg[i])
+			return true;
+		else if (x._dto.seg[i] > y._dto.seg[i])
+			return false;
+	return true;
+}
 
 
 #endif //ARPCTL_IP_H

@@ -2,6 +2,7 @@
 #include <net/if.h>
 #include "pch.h"
 #include "pre/mac.h"
+#include "service/bootstrapper.h"
 
 
 MAC MAC::Unknown { &MAC::UnknownDTO };
@@ -57,6 +58,22 @@ MAC& MAC::operator=(const MAC& rhs)
 	return *this;
 }
 
+bool MAC::operator==(const MAC& rhs) const
+{
+	for (size_t i = 0; i < 6; ++i)
+		if (_dto.seg[i] != rhs._dto.seg[i])
+			return false;
+	return true;
+}
+
+bool MAC::operator!=(const MAC& rhs) const
+{
+	for (size_t i = 0; i < 6; ++i)
+		if (_dto.seg[i] != rhs._dto.seg[i])
+			return true;
+	return false;
+}
+
 uint8_t MAC::operator[](size_t i) const
 {
 	return _dto.seg[i];
@@ -64,6 +81,9 @@ uint8_t MAC::operator[](size_t i) const
 
 std::optional<MAC> MAC::Self(const std::string_view& interface)
 {
+	if (_self.contains(interface))
+		return MAC(&_self[interface]);
+
 	int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (fd == -1) return std::nullopt;
 
@@ -75,5 +95,13 @@ std::optional<MAC> MAC::Self(const std::string_view& interface)
 	DTO(MAC) mac{};
 	std::memcpy(&mac, ifr.ifr_hwaddr.sa_data, 6);
 
-	return std::make_optional(MAC(&mac));
+	_self.emplace(interface, mac);
+
+	return MAC(&mac);
+}
+
+std::optional<MAC> MAC::Self()
+{
+	auto interface = Bootstrapper::GetInstance().Device.Get();
+	return Self(interface);
 }

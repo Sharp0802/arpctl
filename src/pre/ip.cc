@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "pre/ip.h"
 #include "log.h"
+#include "service/bootstrapper.h"
 #include <ifaddrs.h>
 
 IP::IP() : _dto({ 0, 0, 0, 0 })
@@ -72,6 +73,12 @@ std::optional<IP> IP::Self(const std::string_view& interface)
 	return init ? std::make_optional(IP(raw)) : std::nullopt;
 }
 
+std::optional<IP> IP::Self()
+{
+	auto interface = Bootstrapper::GetInstance().Device.Get();
+	return Self(interface);
+}
+
 IP::operator std::string_view() const
 {
 	std::string reserved;
@@ -85,6 +92,14 @@ IP& IP::operator=(const IP& rhs)
 {
 	Raw = rhs.Raw.Get();
 	return *this;
+}
+
+bool IP::operator==(const IP& rhs)
+{
+	for (size_t i = 0; i < 4; ++i)
+		if (_dto.seg[i] != rhs._dto.seg[i])
+			return false;
+	return true;
 }
 
 uint8_t IP::operator[](size_t i) const
