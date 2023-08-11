@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "pre/icmp.h"
+#include "dat/octet_stream.h"
 
 ICMP::ICMP() : _raw({})
 {
@@ -35,16 +36,12 @@ uint16_t ICMP::CalculateChecksum() const noexcept
 	return intrin::rfc1071(&c, sizeof(_raw));
 }
 
-uint16_t ICMP::CalculateChecksumWith(std::vector<uint8_t> payload) const noexcept
+uint16_t ICMP::CalculateChecksumWith(const OctetStream& payload) const noexcept
 {
-	std::vector<uint8_t> p;
-	p.resize(sizeof(_raw) + payload.size());
-
-	_rt_memcpy(&p[0], &_raw, sizeof(_raw));
-	_rt_memcpy(&p[sizeof(_raw)], payload.data(), payload.size());
-	reinterpret_cast<decltype(_raw)*>(&p[0])->chk = 0;
-
-	return intrin::rfc1071(p.data(), p.size());
+	OctetStream stream(&_raw, sizeof(_raw));
+	stream += payload;
+	stream.As<DTO(ICMP)>(0)->chk = 0;
+	return intrin::rfc1071(stream.Get(), stream.Size());
 }
 
 void ICMP::UpdateChecksum() noexcept

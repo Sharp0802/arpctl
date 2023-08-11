@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "convention.h"
 #include "pre/eth.h"
+#include "dat/octet_stream.h"
 
 
 class IPacket
@@ -27,7 +28,7 @@ public:
 	virtual Type GetType() const noexcept = 0;
 
 	[[nodiscard]]
-	virtual std::vector<uint8_t> GetRaw() const noexcept = 0;
+	virtual OctetStream GetRaw() const noexcept = 0;
 
 	[[nodiscard]]
 	virtual size_t GetSize() const noexcept;

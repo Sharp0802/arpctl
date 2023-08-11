@@ -7,6 +7,8 @@
 #include "pre/eth.h"
 #include "pre/iphdr.h"
 #include "pstl/concurrent_queue.h"
+#include "dat/octet_stream.h"
+#include "pstl/channeling_queue.h"
 
 class Fragment final
 {
@@ -37,7 +39,7 @@ class Transmitter final
 {
 private:
 	std::shared_ptr<pcap_t> _pcap;
-	pstl::concurrent_queue<std::vector<uint8_t>> _q;
+	pstl::channeling_queue<OctetStream> _q;
 
 private:
 	static Transmitter* _instance;
@@ -50,7 +52,7 @@ public:
 public:
 	void Run(const volatile bool* token);
 
-	void Transmit(const std::vector<uint8_t>& data);
+	void Transmit(OctetStream data);
 	void Transmit(const void* data, size_t size);
 };
 

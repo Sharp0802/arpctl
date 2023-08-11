@@ -6,6 +6,7 @@
 #include "property.h"
 #include "ichecksumable.h"
 #include "log.h"
+#include "dat/octet_stream.h"
 
 
 decl_DTO(ICMP)
@@ -104,7 +105,7 @@ protected:
 
 public:
 	[[nodiscard]]
-	uint16_t CalculateChecksumWith(std::vector<uint8_t> payload) const noexcept;
+	uint16_t CalculateChecksumWith(const OctetStream& payload) const noexcept;
 
 private:
 	void UpdateChecksum() noexcept;

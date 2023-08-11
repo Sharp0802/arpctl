@@ -67,7 +67,7 @@ void Transmitter::Run(volatile const bool* token)
 {
 	while (*token)
 	{
-		auto opt = _q.try_pop();
+		auto opt = _q.pop();
 		if (!opt)
 		{
 			sched_yield();
@@ -75,25 +75,22 @@ void Transmitter::Run(volatile const bool* token)
 		}
 		auto& data = opt.value();
 
-		auto r = pcap_inject(_pcap.get(), data.data(), data.size());
+		auto r = pcap_inject(_pcap.get(), data.Get(), data.Size());
 		if (r == PCAP_ERROR)
 			LOG(FAIL) << "could not inject packet (" << pcap_geterr(_pcap.get()) << ')';
 		else
-			LOG(VERB) << "packet sent (" << data.size() << " requested, " << r << " sent)";
+			LOG(VERB) << "packet sent (" << data.Size() << " requested, " << r << " sent)";
 	}
 }
 
-void Transmitter::Transmit(const std::vector<uint8_t>& data)
+void Transmitter::Transmit(OctetStream data)
 {
-	_q.push(data);
+	_q.push(std::move(data));
 }
 
 void Transmitter::Transmit(const void* data, size_t size)
 {
-	std::vector<uint8_t> buf;
-	buf.resize(size);
-	_rt_memcpy(buf.data(), data, size);
-	_q.push(buf);
+	_q.push(OctetStream(data, size));
 }
 
 Transmitter::Transmitter(std::shared_ptr<pcap_t> pcap) : _pcap(std::move(pcap))

@@ -9,7 +9,7 @@ class ICMPPacket final : protected IPv4Packet
 {
 private:
 	ICMP _icmp;
-	std::vector<uint8_t> _payload;
+	OctetStream _payload;
 
 public:
 	ICMPPacket() = delete;
@@ -23,7 +23,7 @@ public:
 	enum IPacket::Type GetType() const noexcept override;
 
 	[[nodiscard]]
-	std::vector<uint8_t> GetRaw() const noexcept override;
+	OctetStream GetRaw() const noexcept override;
 
 	[[nodiscard]]
 	size_t GetSize() const noexcept override;
@@ -32,25 +32,27 @@ public:
 	template<typename T>
 	ICMPPacket& operator<<(T arg)
 	{
-		_payload.push_back(arg);
+		_payload += OctetStream(&arg, sizeof(arg));
 		return *this;
 	}
 
 	template<typename T, size_t N>
 	ICMPPacket& operator<<(T argv[N])
 	{
-		_payload.reserve(_payload.size() + N);
-		for (size_t i = 0; i < N; ++i)
-			_payload.push_back(argv[i]);
+		_payload += OctetStream(argv, sizeof(T) * N);
+		return *this;
+	}
+
+	template<typename T, size_t N>
+	ICMPPacket& operator<<(const std::array<T, N>& argv)
+	{
+		_payload += OctetStream(argv.data(), argv.size());
 		return *this;
 	}
 
 	ICMPPacket& operator<<(const char* str)
 	{
-		auto size = strlen(str);
-		_payload.reserve(_payload.size() + size);
-		for (size_t i = 0; i < size; ++i)
-			_payload.push_back(str[i]);
+		_payload += OctetStream(str, strlen(str));
 		return *this;
 	}
 };

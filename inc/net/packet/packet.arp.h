@@ -3,6 +3,7 @@
 
 #include "ipacket.h"
 #include "pre/arphdr.h"
+#include "dat/octet_stream.h"
 
 
 class ARPPacket final : public IPacket
@@ -22,7 +23,7 @@ public:
 	enum IPacket::Type GetType() const noexcept override;
 
 	[[nodiscard]]
-	std::vector<uint8_t> GetRaw() const noexcept override;
+	OctetStream GetRaw() const noexcept override;
 
 	[[nodiscard]]
 	size_t GetSize() const noexcept override;

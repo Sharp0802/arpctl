@@ -20,7 +20,7 @@ public:
 	enum IPacket::Type GetType() const noexcept override;
 
 	[[nodiscard]]
-	std::vector<uint8_t> GetRaw() const noexcept override;
+	OctetStream GetRaw() const noexcept override;
 
 	[[nodiscard]]
 	size_t GetSize() const noexcept override;

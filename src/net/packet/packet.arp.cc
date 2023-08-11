@@ -13,14 +13,14 @@ enum IPacket::Type ARPPacket::GetType() const noexcept
 	return IPacket::Type::ARP;
 }
 
-std::vector<uint8_t> ARPPacket::GetRaw() const noexcept
+OctetStream ARPPacket::GetRaw() const noexcept
 {
-	std::vector<uint8_t> raw(GetSize());
 	auto arp = _arp.Raw.Get();
 	auto eth = _eth.Raw.Get();
-	_rt_memcpy(&raw[0], &eth, sizeof(DTO(EthernetHeader)));
-	_rt_memcpy(&raw[sizeof(DTO(EthernetHeader))], &arp, sizeof(DTO(ARPHeader)));
-	return raw;
+	OctetStream sarp(&arp, sizeof(arp));
+	OctetStream seth(&eth, sizeof(eth));
+	sarp += seth;
+	return sarp;
 }
 
 size_t ARPPacket::GetSize() const noexcept

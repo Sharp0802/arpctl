@@ -19,27 +19,24 @@ enum IPacket::Type ICMPPacket::GetType() const noexcept
 	return IPacket::Type::ICMP;
 }
 
-std::vector<uint8_t> ICMPPacket::GetRaw() const noexcept
+OctetStream ICMPPacket::GetRaw() const noexcept
 {
-	std::vector<uint8_t> data(IPv4Packet::GetRaw());
-	auto* pl = &reinterpret_cast<DTO(IPv4Header)*>(&data[IPv4Packet::GetSize() - sizeof(DTO(IPv4Header))])->len;
+	OctetStream data(IPv4Packet::GetRaw());
+	auto pl = &data.As<DTO(IPv4Header)>(IPv4Packet::GetSize() - sizeof(DTO(IPv4Header)))->len;
 	if (*pl == IPv4Header::Auto)
 		*pl = htons(GetSize() - sizeof(DTO(EthernetHeader)));
-	data.resize(GetSize());
-
-	std::cout << _payload.data() << '\n';
 
 	auto icmp = _icmp.Raw.Get();
 	icmp.chk = _icmp.CalculateChecksumWith(_payload);
+	OctetStream sicmp(&icmp, sizeof(icmp));
 
-	auto base = data.data() + IPv4Packet::GetSize();
-	_rt_memcpy(base, &icmp, sizeof(icmp));
-	_rt_memcpy(base + sizeof(DTO(ICMP)), _payload.data(), _payload.size());
+	data += sicmp;
+	data += _payload;
 
 	return data;
 }
 
 size_t ICMPPacket::GetSize() const noexcept
 {
-	return IPv4Packet::GetSize() + sizeof(DTO(ICMP)) + _payload.size();
+	return IPv4Packet::GetSize() + sizeof(DTO(ICMP)) + _payload.Size();
 }
