@@ -41,7 +41,7 @@ namespace pstl
 		{
 			std::lock_guard lock_w(_wsync);
 
-			_ring[_w] = value;
+			_ring[_w] = std::move(value);
 			_w = (_w + 1) % _c;
 
 			__sync_add_and_fetch(&_s, 1);
@@ -67,18 +67,16 @@ namespace pstl
 		[[nodiscard]]
 		std::optional<T> pop() noexcept
 		{
-			T v;
-			{
-				std::lock_guard lock(_rsync);
+			std::lock_guard lock(_rsync);
 
-				if (_r == _w)
-					return std::nullopt;
+			if (_r == _w)
+				return std::nullopt;
 
-				v = _ring[_r];
-				_r = (_r + 1) % _c;
+			T v = std::move(_ring[_r]);
+			_r = (_r + 1) % _c;
 
-				__sync_sub_and_fetch(&_s, 1);
-			}
+			__sync_sub_and_fetch(&_s, 1);
+
 			return v;
 		}
 
