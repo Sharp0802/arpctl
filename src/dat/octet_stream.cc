@@ -1,6 +1,14 @@
 #include "pch.h"
 #include "dat/octet_stream.h"
 
+
+OctetStream::OctetStream() noexcept
+{
+	_size = 0;
+	_cap = 16;
+	_data = new uint8_t[_cap];
+}
+
 OctetStream::OctetStream(const void* dat, size_t s) noexcept
 {
 	_cap = _size = s;
@@ -12,7 +20,7 @@ OctetStream::OctetStream(OctetStream&& rhs) noexcept
 {
 	_cap = rhs._cap;
 	_size = rhs._size;
-	_data = rhs.Swap();
+	_data = rhs.Release();
 }
 
 OctetStream::~OctetStream()
@@ -20,11 +28,18 @@ OctetStream::~OctetStream()
 	delete[] _data;
 }
 
-uint8_t* OctetStream::Swap() noexcept
+uint8_t* OctetStream::Release() noexcept
 {
 	auto old = _data;
 	delete[] _data;
 	return old;
+}
+
+void OctetStream::Swap(OctetStream& stream) noexcept
+{
+	std::swap(_size, stream._size);
+	std::swap(_cap, stream._cap);
+	std::swap(_data, stream._data);
 }
 
 size_t OctetStream::Capacity() const noexcept

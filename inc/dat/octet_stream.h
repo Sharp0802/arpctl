@@ -12,20 +12,22 @@ private:
 	uint8_t* _data;
 
 public:
-	OctetStream() = delete;
+	OctetStream() noexcept;
 
 	OctetStream(const void* dat, size_t s) noexcept;
 
-	OctetStream(const OctetStream& rhs) = delete;
-
 	OctetStream(OctetStream&& rhs) noexcept;
+
+	OctetStream(const OctetStream& rhs) = delete;
 
 	~OctetStream();
 
 private:
-	uint8_t* Swap() noexcept;
+	uint8_t* Release() noexcept;
 
 public:
+	void Swap(OctetStream& stream) noexcept;
+
 	[[nodiscard]]
 	size_t Capacity() const noexcept;
 
@@ -46,6 +48,12 @@ public:
 
 public:
 	OctetStream& operator=(const OctetStream& rhs) = delete;
+
+	OctetStream& operator=(OctetStream&& rhs) noexcept
+	{
+		OctetStream(std::move(rhs)).Swap(*this);
+		return *this;
+	}
 
 	OctetStream& operator+=(const OctetStream& rhs);
 
