@@ -82,9 +82,7 @@ public:
 		ICMPPacket packet(eth, ipv4, icmp);
 		packet << "0123456789:;<=>?";
 
-		std::vector<uint8_t> data(packet.GetRaw());
-
-		Transmitter::GetInstance().Transmit(data);
+		Transmitter::GetInstance().Transmit(packet.GetRaw());
 		sleep(1000);
 		worker.Stop();
 		worker.Join();
