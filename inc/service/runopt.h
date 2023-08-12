@@ -23,7 +23,7 @@ private:
 	DTO(RunOption) _dto;
 
 public:
-	RunOption(DTO(RunOption) dto);
+	explicit RunOption(DTO(RunOption) dto);
 
 	static const RunOption& Global();
 
