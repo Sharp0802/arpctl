@@ -12,16 +12,11 @@ private:
 	NetworkObject& _target;
 	std::chrono::milliseconds _timeout;
 
+	volatile bool _token;
+	volatile bool _run;
+
 public:
-	NetworkFlow(
-			NetworkObject& sender,
-			NetworkObject& target,
-			std::chrono::milliseconds timeout) :
-			_sender(sender),
-			_target(target),
-			_timeout(timeout)
-	{
-	}
+	NetworkFlow(NetworkObject& sender, NetworkObject& target);
 
 public:
 	bool InitializeComponents();
@@ -31,6 +26,9 @@ public:
 	std::future<bool> Run();
 	std::future<bool> Relay();
 	std::future<bool> Periodic(std::chrono::milliseconds period);
+
+	std::future_status Join(std::chrono::milliseconds timeout);
+	void Stop();
 };
 
 

