@@ -24,7 +24,9 @@ public:
 	}
 
 public:
-	std::future<bool> InitializeComponents();
+	bool InitializeComponents();
+	std::future<bool> InitializeComponentsDeferred();
+	std::future<bool> InitializeComponentsAsync();
 
 	std::future<bool> Run();
 	std::future<bool> Relay();

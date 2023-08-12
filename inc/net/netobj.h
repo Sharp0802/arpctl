@@ -18,8 +18,8 @@ public:
 	using HandlerType = Event<const HeaderSet&, const OctetStream&>::Handler;
 
 private:
-	std::unique_ptr<::IP> _ip;
-	std::unique_ptr<::MAC> _mac;
+	::IP _ip;
+	::MAC _mac;
 	std::mutex _sync;
 
 	Receiver::HandlerType _handler;
@@ -31,17 +31,32 @@ private:
 	std::future<bool> ResolveMACAsync();
 
 public:
+	bool InitializeComponents();
+
+	std::future<bool> InitializeComponentsDeferred();
+
 	std::future<bool> InitializeComponentsAsync();
+
+
+	bool Infect(const IP& ip);
+
+	std::future<bool> InfectDeferred(const IP& ip);
 
 	std::future<bool> InfectAsync(const IP& ip);
 
+
+	bool InfectionTest(const IP& ip, std::chrono::milliseconds timeout);
+
+	std::future<bool> InfectionTestDeferred(const IP& ip, std::chrono::milliseconds timeout);
+
 	std::future<bool> InfectionTestAsync(const IP& ip, std::chrono::milliseconds timeout);
+
 
 	/* SEMANTIC USE ONLY : null object can call this member function */
 	void Send(OctetStream data);
 
 public:
-	NetworkObject();
+	explicit NetworkObject(const IP& ip);
 
 	~NetworkObject();
 
@@ -49,14 +64,14 @@ public:
 	readonly<::IP> IP{
 			_get
 			{
-				return *const_cast<::IP*>(_ip.get());
+				return _ip;
 			}
 	};
 
 	readonly<::MAC> MAC{
 			_get
 			{
-				return *const_cast<::MAC*>(_mac.get());
+				return _mac;
 			}
 	};
 

@@ -2,14 +2,21 @@
 #include "net/netflow.h"
 #include "pstl/waithandle.h"
 
-std::future<bool> NetworkFlow::InitializeComponents()
+bool NetworkFlow::InitializeComponents()
 {
-	return std::async(std::launch::async, [this]()
-	{
-		auto ts = _sender.InitializeComponentsAsync();
-		auto tt = _target.InitializeComponentsAsync();
-		return ts.get() && tt.get();
-	});
+	auto ts = _sender.InitializeComponentsAsync();
+	auto tt = _target.InitializeComponentsAsync();
+	return ts.get() && tt.get();
+}
+
+std::future<bool> NetworkFlow::InitializeComponentsDeferred()
+{
+	return std::async(std::launch::deferred, &NetworkFlow::InitializeComponents, this);
+}
+
+std::future<bool> NetworkFlow::InitializeComponentsAsync()
+{
+	return std::async(std::launch::async, &NetworkFlow::InitializeComponents, this);
 }
 
 std::future<bool> NetworkFlow::Run()
