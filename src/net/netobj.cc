@@ -28,14 +28,14 @@ std::future<bool> NetworkObject::ResolveMACAsync()
 		/* QUERY CACHE */
 		if (ARPTable.contains(*_ip))
 		{
-			auto mac = std::make_unique<MAC>(ARPTable[*_ip]);
+			auto mac = std::make_unique<::MAC>(ARPTable[*_ip]);
 			_mac.swap(mac);
 			return true;
 		}
 
 		pstl::waithandle wh;
 
-		MAC mac;
+		::MAC mac;
 		Receiver::HandlerType handler([&wh, &handler, &mac](const HeaderSet& hdr, const OctetStream&)
 		{
 			if (hdr.GetType() != HeaderSet::SpecialType::ARP)
@@ -87,7 +87,7 @@ std::future<bool> NetworkObject::ResolveMACAsync()
 
 		/* STORE MAC */
 		{
-			auto tmp = std::make_unique<MAC>(mac);
+			auto tmp = std::make_unique<::MAC>(mac);
 			_mac.swap(tmp);
 		}
 
@@ -112,7 +112,7 @@ std::future<bool> NetworkObject::InitializeComponentsAsync()
 	});
 }
 
-std::future<bool> NetworkObject::InfectAsync(const IP& ip)
+std::future<bool> NetworkObject::InfectAsync(const ::IP& ip)
 {
 	return std::async(std::launch::async, [&ip, this]()
 	{
@@ -140,7 +140,7 @@ std::future<bool> NetworkObject::InfectAsync(const IP& ip)
 	});
 }
 
-std::future<bool> NetworkObject::InfectionTestAsync(const IP& ip, std::chrono::milliseconds timeout)
+std::future<bool> NetworkObject::InfectionTestAsync(const ::IP& ip, std::chrono::milliseconds timeout)
 {
 	return std::async(std::launch::async, [&ip, timeout, this]()
 	{
@@ -178,7 +178,7 @@ std::future<bool> NetworkObject::InfectionTestAsync(const IP& ip, std::chrono::m
 						LOG(WARN) << static_cast<std::string_view>(*_ip)
 								  << ": invalid response size detected. integrity can not be ensured";
 					}
-					else if (std::memcpy(data.As<char>(ofs), rsig.data(), 16))
+					else if (std::memcmp(data.As<char>(ofs), rsig.data(), 16) != 0)
 					{
 						LOG(WARN) << static_cast<std::string_view>(*_ip)
 								  << ": invalid response detected. integrity can not be ensured";

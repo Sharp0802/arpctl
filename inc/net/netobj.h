@@ -18,8 +18,8 @@ public:
 	using HandlerType = Event<const HeaderSet&, const OctetStream&>::Handler;
 
 private:
-	std::unique_ptr<IP> _ip;
-	std::unique_ptr<MAC> _mac;
+	std::unique_ptr<::IP> _ip;
+	std::unique_ptr<::MAC> _mac;
 	std::mutex _sync;
 
 	Receiver::HandlerType _handler;
@@ -46,17 +46,17 @@ public:
 	~NetworkObject();
 
 public:
-	readonly<const IP&> IP{
+	readonly<::IP> IP{
 			_get
 			{
-				return *_ip;
+				return *const_cast<::IP*>(_ip.get());
 			}
 	};
 
-	readonly<const MAC&> MAC{
+	readonly<::MAC> MAC{
 			_get
 			{
-				return *_mac;
+				return *const_cast<::MAC*>(_mac.get());
 			}
 	};
 

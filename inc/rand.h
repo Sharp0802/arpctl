@@ -8,7 +8,7 @@
 class Random
 {
 private:
-	static thread_local size_t _seg;
+	inline static thread_local size_t _seg;
 
 public:
 	template<typename T>

@@ -30,7 +30,7 @@ public:
 
 	~JobSystem();
 
-	JobSystem& GetInstance();
+	static JobSystem& GetInstance();
 
 private:
 	void InitializeThread(ThreadContext* ctx);
