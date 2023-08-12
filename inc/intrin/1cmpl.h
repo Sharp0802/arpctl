@@ -3,7 +3,6 @@
 
 #include "framework.h"
 
-#ifndef COMMENT
 /*
  * - RFC 1071 : Computing the Internet Checksum
  *
@@ -26,7 +25,6 @@
  * > The sum of 16-bit integers can be computed in either byte order
  *
  * */
-#endif
 
 namespace intrin
 {

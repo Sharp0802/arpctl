@@ -89,7 +89,9 @@ public:
 
 	IP& operator=(const IP& rhs);
 
-	bool operator ==(const IP& rhs);
+	bool operator ==(const IP& rhs) const;
+
+	bool operator !=(const IP& rhs) const;
 
 	uint8_t operator[](size_t i) const;
 };

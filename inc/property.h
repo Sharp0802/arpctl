@@ -49,7 +49,7 @@ public:
 };
 
 template<typename T>
-using property = __property<T>;
+using property = const __property<T>;
 
 template<typename T>
 using readonly = const __readonly<T>;

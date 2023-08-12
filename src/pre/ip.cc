@@ -57,7 +57,7 @@ std::optional<IP> IP::Self(const std::string_view& interface)
 	do
 	{
 
-		std::memcpy(raw.seg, &addr->ifa_addr->sa_data[2], 4);
+		_rt_memcpy(raw.seg, &addr->ifa_addr->sa_data[2], 4);
 		LOG(VERB) << "local IP detected: " << addr->ifa_name << ' ' << static_cast<std::string_view>(IP(raw));
 		auto mask = static_cast<u_char>(addr->ifa_addr->sa_data[2]);
 		if (interface == addr->ifa_name && (mask <= 223))
@@ -94,12 +94,20 @@ IP& IP::operator=(const IP& rhs)
 	return *this;
 }
 
-bool IP::operator==(const IP& rhs)
+bool IP::operator==(const IP& rhs) const
 {
 	for (size_t i = 0; i < 4; ++i)
 		if (_dto.seg[i] != rhs._dto.seg[i])
 			return false;
 	return true;
+}
+
+bool IP::operator!=(const IP& rhs) const
+{
+	for (size_t i = 0; i < 4; ++i)
+		if (_dto.seg[i] != rhs._dto.seg[i])
+			return true;
+	return false;
 }
 
 uint8_t IP::operator[](size_t i) const

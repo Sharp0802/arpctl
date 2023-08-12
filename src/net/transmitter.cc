@@ -48,14 +48,14 @@ std::vector<uint8_t> Fragment::Resolve() const
 	// COPY HEADER
 	for (size_t i = 0; i < Count(); ++i)
 	{
-		std::memcpy(_buffer.data() + _mtu * i, _payload.data(), ofs);
+		_rt_memcpy(_buffer.data() + _mtu * i, _payload.data(), ofs);
 	}
 
 	// FRAG PAYLOAD
 	const uint8_t* payload = &_payload[ofs];
 	for (size_t i = 0; i < Count(); ++i)
 	{
-		std::memcpy(_buffer.data() + _mtu * i + ofs, payload + (_mtu - ofs) * i, _mtu - ofs);
+		_rt_memcpy(_buffer.data() + _mtu * i + ofs, payload + (_mtu - ofs) * i, _mtu - ofs);
 	}
 
 	*/

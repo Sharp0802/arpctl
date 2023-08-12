@@ -2,7 +2,7 @@
 #include "log.h"
 #include "xthread.h"
 
-msg_body::msg_body(std::string_view heading, std::basic_ostream<char>& out) : _out(out), _buf()
+msg_body::msg_body(std::string_view heading, std::basic_ostream<char>& out) : _pad(), _out(out), _buf()
 {
 	_buf << '[' << Worker::ID() << ']' << heading;
 	_buf.seekp(0, std::ios::end);

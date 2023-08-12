@@ -39,7 +39,7 @@ MAC::MAC(const MAC& rhs)
 
 MAC::MAC(void* raw)
 {
-	std::memcpy(&_dto, raw, sizeof(DTO(MAC)));
+	_rt_memcpy(&_dto, raw, sizeof(DTO(MAC)));
 }
 
 MAC::operator std::string_view() const
@@ -93,7 +93,7 @@ std::optional<MAC> MAC::Self(const std::string_view& interface)
 	close(fd);
 
 	DTO(MAC) mac{};
-	std::memcpy(&mac, ifr.ifr_hwaddr.sa_data, 6);
+	_rt_memcpy(&mac, ifr.ifr_hwaddr.sa_data, 6);
 
 	_self.emplace(interface, mac);
 
