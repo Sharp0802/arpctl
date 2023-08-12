@@ -121,7 +121,7 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 	std::vector<std::shared_ptr<NetworkFlow>> flow;
 	for (; i < argv.size(); i += 2)
 	{
-		flow.push_back(std::make_shared<NetworkFlow>(*set.at(i), *set.at(i + 1), timeout.value()));
+		flow.push_back(std::make_shared<NetworkFlow>(*set.at(i), *set.at(i + 1)));
 	}
 
 	_flow = flow;
@@ -135,6 +135,8 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 		return false;
 	}
 
+	RunOption _(opt);
+
 	LOG(NOTE) << "application configured!";
 
 	return true;
@@ -142,6 +144,7 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 
 void Application::Start()
 {
+	/* INITIALIZATION */
 	std::vector<std::future<bool>> when;
 	when.reserve(_flow.size());
 	for (auto& flow: _flow)
@@ -159,6 +162,7 @@ void Application::Start()
 		return;
 	}
 
+	/* START FLOW */
 	for (auto& flow: _flow)
 		when.emplace_back(flow->Run());
 
@@ -174,6 +178,7 @@ void Application::Start()
 		return;
 	}
 
+	/* BIND RELAYER */
 	for (auto& flow: _flow)
 		when.emplace_back(flow->Relay());
 
@@ -189,23 +194,28 @@ void Application::Start()
 		return;
 	}
 
-	auto timeout = RunOption::Global().Timeout.Get();
+	/* START PERIODIC INFECTION */
+	auto period = RunOption::Global().Timeout.Get();
 	for (auto& flow: _flow)
-		_when.emplace_back(flow->Periodic(timeout));
+		flow->Periodic(period);
 }
 
 enum Worker::State Application::Join()
 {
-	bool init = true;
-	for (auto& task: _when)
-		init &= task.get();
-
-	return init
-		   ? Worker::State::COMPLETED
-		   : Worker::State::EXCEPTION;
+	auto timeout = RunOption::Global().Timeout.Get();
+	for (auto& flow: _flow)
+	{
+		auto status = flow->Join(timeout);
+		if (status == std::future_status::timeout)
+		{
+			return Worker::State::OCCUPIED;
+		}
+	}
+	return Worker::State::COMPLETED;
 }
 
 void Application::Abort()
 {
-	// TODO
+	for (auto& flow: _flow)
+		flow->Stop();
 }

@@ -13,7 +13,6 @@ private:
 	std::shared_ptr<Bootstrapper> _bt;
 	std::vector<std::shared_ptr<NetworkObject>> _obj;
 	std::vector<std::shared_ptr<NetworkFlow>> _flow;
-	std::vector<std::future<bool>> _when;
 
 public:
 	~Application() override = default;
