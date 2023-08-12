@@ -1,5 +1,5 @@
-#ifndef ARPCTL_NETCTX_H
-#define ARPCTL_NETCTX_H
+#ifndef ARPCTL_NETFLOW_H
+#define ARPCTL_NETFLOW_H
 
 #include "framework.h"
 #include "netobj.h"
@@ -32,4 +32,4 @@ public:
 };
 
 
-#endif //ARPCTL_NETCTX_H
+#endif //ARPCTL_NETFLOW_H
