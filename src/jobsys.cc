@@ -69,6 +69,8 @@ bool JobSystem::Start()
 	if (_init) return false;
 
 	Initialize();
+
+	return true;
 }
 
 void JobSystem::Stop()
