@@ -80,6 +80,8 @@ OctetStream& OctetStream::operator+=(const OctetStream& rhs)
 		_rt_memcpy(_data + _size, rhs._data, rhs._size);
 		_size += rhs._size;
 	}
+
+	return *this;
 }
 
 OctetStream::operator std::string_view() const
