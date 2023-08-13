@@ -6,7 +6,7 @@
 #include "service/transmitter_test_application.h"
 #include "service/receiver_test_application.h"
 
-using ApplicationType = TransmitterTestApplication;
+using ApplicationType = Application;
 static_assert(std::is_base_of_v<IApplication, ApplicationType>);
 
 int main(int argc, char* argv[])
