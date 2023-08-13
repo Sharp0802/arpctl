@@ -54,6 +54,21 @@
 /* INTRINSICS */
 #include "intrin/intrin.h"
 
-#define COMMENT false
+/* LOGGING */
+#include "log.h"
+
+template<typename T, typename... P>
+T* typed_alloc(P... args)
+{
+	TRACE_S;
+	return new T(args...);
+}
+
+template<typename T>
+T* typed_alloc_v(size_t n)
+{
+	TRACE_S;
+	return new T[n];
+}
 
 #endif //ARPCTL_FRAMEWORK_H

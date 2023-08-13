@@ -5,28 +5,8 @@
 #include "service/bootstrapper.h"
 
 
-MAC MAC::Unknown { &MAC::UnknownDTO };
-MAC MAC::Broadcast { &MAC::BroadcastDTO };
-
-[[nodiscard]]
-static consteval std::array<char, 16> GetHexTable()
-{
-	std::array<char, 16> buf{};
-	for (size_t i = 0; i < 10; ++i)
-		buf[i] = i + '0';
-	for (size_t i = 0; i < 6; ++i)
-		buf[i + 10] = i + 'A';
-
-	return buf;
-}
-
-[[gnu::access(write_only, 1)]]
-static void DumpHex(char* dst, uint8_t src)
-{
-	std::array<char, 16> vt = GetHexTable();
-	dst[0] = vt[src & 0xF0 >> 4];
-	dst[1] = vt[src & 0x0F >> 0];
-}
+MAC MAC::Unknown{ &MAC::UnknownDTO };
+MAC MAC::Broadcast{ &MAC::BroadcastDTO };
 
 MAC::MAC() : _dto({ 0, 0, 0, 0, 0, 0 })
 {
@@ -42,14 +22,13 @@ MAC::MAC(void* raw)
 	_rt_memcpy(&_dto, raw, sizeof(DTO(MAC)));
 }
 
-MAC::operator std::string_view() const
+MAC::operator std::string() const
 {
-	std::array<char, 17> buffer{};
-	for (size_t i = 0; i < 6; ++i)
-		DumpHex(&buffer[3 * i], _dto.seg[i]);
-	for (size_t i = 0; i < 5; ++i)
-		buffer[i * 3 + 2] = ':';
-	return { std::string(buffer.data()) }; // Using raw buffer causes returning temporary variable
+	std::array<char, 18> buffer{};
+	sprintf(buffer.data(), "%hhX:%hhX:%hhX:%hhX:%hhX:%hhX",
+			_dto.seg[0], _dto.seg[1], _dto.seg[2],
+			_dto.seg[3], _dto.seg[4], _dto.seg[5]);
+	return { buffer.data() }; // Using raw buffer causes returning temporary variable
 }
 
 MAC& MAC::operator=(const MAC& rhs)
@@ -79,7 +58,7 @@ uint8_t MAC::operator[](size_t i) const
 	return _dto.seg[i];
 }
 
-std::optional<MAC> MAC::Self(const std::string_view& interface)
+std::optional<MAC> MAC::Self(const std::string& interface)
 {
 	if (_self.contains(interface))
 		return MAC(&_self[interface]);

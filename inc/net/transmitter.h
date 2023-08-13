@@ -22,7 +22,7 @@ public:
 	}
 
 public:
-	static std::optional<size_t> MTU(std::string_view interface);
+	static std::optional<size_t> MTU(std::string interface);
 
 public:
 	[[nodiscard]]

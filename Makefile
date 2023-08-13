@@ -1,7 +1,7 @@
 
 all:
 	cmake -B .cmake -G "Unix Makefiles"
-	cd .cmake && make clean && make -j `nproc`
+	cd .cmake && make -j `nproc`
 
 clean:
 	rm -rf .cmake bin obj

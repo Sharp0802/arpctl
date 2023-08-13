@@ -19,6 +19,7 @@ public:
 
 namespace pstl
 {
+	/*
 	class spinlock final
 	{
 	private:
@@ -30,7 +31,9 @@ namespace pstl
 		bool try_lock();
 
 		void unlock();
-	};
+	};*/
+
+	using spinlock = std::mutex;
 }
 
 #endif //ARPCTL_SPINLOCK_H

@@ -10,7 +10,7 @@
 class ReceiverTestApplication : public IApplication
 {
 private:
-	std::string_view _dev;
+	std::string _dev;
 	std::shared_ptr<pcap_t> _pcap;
 	Receiver* _receiver;
 	Worker* _worker;
@@ -18,7 +18,7 @@ private:
 public:
 	~ReceiverTestApplication() override = default;
 
-	bool Configure(const std::vector<std::string_view>& argv) override
+	bool Configure(const std::vector<std::string>& argv) override
 	{
 		if (argv.size() % 2 != 1 || argv.size() < 3)
 		{
@@ -42,22 +42,22 @@ public:
 		);
 		if (pcap == nullptr)
 		{
-			LOG(FAIL) << "couldn't open device" << _dev << '(' << std::string_view(err) << ")\n";
+			LOG(FAIL) << "couldn't open device" << _dev << '(' << std::string(err.data()) << ")\n";
 			return;
 		}
 		_pcap = pcap;
-		_receiver = new Receiver(pcap);
+		_receiver = ::typed_alloc<Receiver>(pcap);
 
 		Receiver::HandlerType handler([](const auto& header, const auto& stream) {
 			if (header.GetType() != HeaderSet::SpecialType::ICMP)
 				return;
 
-			LOG(VERB) << "Packet captured: Size=" << stream.Size();
+			LOG(VERB) << "Packet captured: size=" << stream.Size() << ", seq=" << std::hex << header.GetICMP().Value.Get();
 		});
 
 		Receiver::GetInstance() += handler;
 
-		_worker = new Worker([this](const volatile bool* token){
+		_worker = ::typed_alloc<Worker>([this](const volatile bool* token){
 			_receiver->Run(token);
 		});
 		_worker->Start();

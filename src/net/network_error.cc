@@ -1,6 +1,6 @@
 #include "net/network_error.h"
 
-network_error::network_error(std::string_view msg) : _msg(msg)
+network_error::network_error(std::string msg) : _msg(msg)
 {
 }
 

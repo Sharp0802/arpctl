@@ -22,30 +22,15 @@ IP::IP(DTO(IP) dto) : _dto(dto)
 {
 }
 
-std::optional<IP> IP::From(const std::string_view& str)
+std::optional<IP> IP::From(const std::string& str)
 {
-	thread_local std::array<char, 15> buffer;
-
-	if (str.size() > 15)
-		return std::nullopt;
-	_rt_memcpy(buffer.data(), str.data(), 15);
-
 	DTO(IP) dto{};
-	for (size_t r = 0, i = 0, seg = 0; i < 15; ++i)
-	{
-		if (buffer[i] != '.')
-			continue;
-		buffer[i] = 0;
-		if ((dto.seg[seg++] = std::strtol(&buffer[r], nullptr, 10)) > std::numeric_limits<uint8_t>::max())
-			return std::nullopt;
-		if (seg > 3)
-			return std::nullopt;
-	}
+	std::sscanf(str.data(), "%hhd.%hhd.%hhd.%hhd", &dto.seg[0], &dto.seg[1], &dto.seg[2], &dto.seg[3]);
 
 	return IP(&dto);
 }
 
-std::optional<IP> IP::Self(const std::string_view& interface)
+std::optional<IP> IP::Self(const std::string& interface)
 {
 	ifaddrs* addr;
 	auto r = getifaddrs(&addr);
@@ -58,7 +43,7 @@ std::optional<IP> IP::Self(const std::string_view& interface)
 	{
 
 		_rt_memcpy(raw.seg, &addr->ifa_addr->sa_data[2], 4);
-		LOG(VERB) << "local IP detected: " << addr->ifa_name << ' ' << static_cast<std::string_view>(IP(raw));
+		LOG(VERB) << "local IP detected: " << addr->ifa_name << ' ' << static_cast<std::string>(IP(raw));
 		auto mask = static_cast<u_char>(addr->ifa_addr->sa_data[2]);
 		if (interface == addr->ifa_name && (mask <= 223))
 		{
@@ -79,13 +64,11 @@ std::optional<IP> IP::Self()
 	return Self(interface);
 }
 
-IP::operator std::string_view() const
+IP::operator std::string() const
 {
-	std::string reserved;
-	reserved.reserve(15);
-	std::stringstream buf{ reserved };
-	buf << _dto.seg[0] << '.' << _dto.seg[1] << '.' << _dto.seg[2] << '.' << _dto.seg[3];
-	return { buf.str() };
+	std::array<char, 32> buf{};
+	std::sprintf(buf.data(), "%u.%u.%u.%u", _dto.seg[0], _dto.seg[1], _dto.seg[2], _dto.seg[3]);
+	return { buf.data() };
 }
 
 IP& IP::operator=(const IP& rhs)

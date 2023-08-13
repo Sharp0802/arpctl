@@ -3,7 +3,7 @@
 uint16_t intrin::rfc1071(const void* data, size_t n) noexcept
 {
 	size_t s = n + n % 2 / 1;
-	auto* p = new uint8_t[s];
+	auto* p = ::typed_alloc_v<uint8_t>(s);
 	p[s - 1] = 0;
 	_rt_memcpy(p, data, n);
 
@@ -11,6 +11,8 @@ uint16_t intrin::rfc1071(const void* data, size_t n) noexcept
 	uint16_t r = 0;
 	for (size_t i = 0; i < s / 2; ++i)
 		intrin::_mm_add_1cmpl(&r, *(u16++));
+
+	delete[] p;
 
 	return ~r;
 }

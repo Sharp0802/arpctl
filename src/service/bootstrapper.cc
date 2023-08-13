@@ -1,6 +1,6 @@
 #include "service/bootstrapper.h"
 
-Bootstrapper::Bootstrapper(std::string_view device, std::chrono::milliseconds timeout): _timeout(timeout), _dev(device)
+Bootstrapper::Bootstrapper(std::string device, std::chrono::milliseconds timeout): _timeout(timeout), _dev(device)
 {
 	_instance = this;
 
@@ -16,9 +16,8 @@ Bootstrapper::Bootstrapper(std::string_view device, std::chrono::milliseconds ti
 		return;
 	}
 
-	_tx = new Transmitter(pcap);
-	_rx = new Receiver(pcap);
-	_jsys = new JobSystem(timeout);
+	_tx = ::typed_alloc<Transmitter>(pcap);
+	_rx = ::typed_alloc<Receiver>(pcap);
 	_init = true;
 }
 
@@ -28,7 +27,6 @@ Bootstrapper::~Bootstrapper()
 	delete _rxw;
 	delete _tx;
 	delete _rx;
-	delete _jsys;
 }
 
 Bootstrapper& Bootstrapper::GetInstance()
@@ -41,10 +39,10 @@ bool Bootstrapper::Start()
 	if (!_init)
 		return false;
 
-	_txw = new Worker([this](const volatile bool* token) {
+	_txw = ::typed_alloc<Worker>([this](const volatile bool* token) {
 		_tx->Run(token);
 	});
-	_rxw = new Worker([this](const volatile bool* token) {
+	_rxw = ::typed_alloc<Worker>([this](const volatile bool* token) {
 		_rx->Run(token);
 	});
 
@@ -55,7 +53,6 @@ void Bootstrapper::Stop()
 {
 	if (_txw) _txw->Stop();
 	if (_rxw) _rxw->Stop();
-	if (_jsys) _jsys->Stop();
 }
 
 void Bootstrapper::Abort()
@@ -66,7 +63,5 @@ void Bootstrapper::Abort()
 			_txw->Abort();
 		if (i == 1 && _rxw && _rxw->Join(_timeout) == std::future_status::timeout)
 			_rxw->Abort();
-		if (_jsys)
-			_jsys->Stop();
 	});
 }

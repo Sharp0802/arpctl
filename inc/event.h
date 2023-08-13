@@ -53,8 +53,8 @@ public:
 	using Handler = EventHandler<Args...>;
 
 private:
-	pstl::spinlock _spin;
-	std::unordered_set<Handler> _record;
+	pstl::spinlock _spin{};
+	std::unordered_set<Handler> _record{};
 
 public:
 	void operator()(Args... args) const

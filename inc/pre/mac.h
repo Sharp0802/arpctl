@@ -27,7 +27,7 @@ class MAC final
 	friend struct std::less<MAC>;
 
 private:
-	inline static thread_local std::unordered_map<std::string_view, DTO(MAC)> _self;
+	inline static thread_local std::unordered_map<std::string, DTO(MAC)> _self;
 
 private:
 	DTO(MAC) _dto;
@@ -52,7 +52,7 @@ public:
 	};
 
 public:
-	explicit operator std::string_view() const;
+	explicit operator std::string() const;
 
 	MAC& operator=(const MAC& rhs);
 
@@ -63,7 +63,7 @@ public:
 	uint8_t operator[](size_t i) const;
 
 public:
-	static std::optional<MAC> Self(const std::string_view& interface);
+	static std::optional<MAC> Self(const std::string& interface);
 	static std::optional<MAC> Self();
 
 public:

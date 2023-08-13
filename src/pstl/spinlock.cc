@@ -23,6 +23,7 @@ void Spinlock::Unlock()
 	_sync.store(false, std::memory_order_release);
 }
 
+/*
 void pstl::spinlock::lock()
 {
 	for (;;)
@@ -44,3 +45,4 @@ void pstl::spinlock::unlock()
 {
 	_sync.store(false, std::memory_order_release);
 }
+*/

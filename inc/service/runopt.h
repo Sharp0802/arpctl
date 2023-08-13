@@ -10,7 +10,6 @@ decl_DTO(RunOption)
 {
 	bool view_pkt;
 	bool chk_icmp;
-	bool use_sniffer;
 	std::chrono::milliseconds timeout;
 };
 
@@ -39,13 +38,6 @@ public:
 			_get
 			{
 				return _dto.chk_icmp;
-			}
-	};
-
-	readonly<bool> UseSniffer{
-			_get
-			{
-				return _dto.use_sniffer;
 			}
 	};
 

@@ -7,10 +7,10 @@
 class network_error : public std::exception
 {
 private:
-	std::string_view _msg;
+	std::string _msg;
 
 public:
-	explicit network_error(std::string_view msg);
+	explicit network_error(std::string msg);
 
 public:
 	[[nodiscard]]

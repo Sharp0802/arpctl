@@ -5,11 +5,14 @@
 #include "bootstrapper.h"
 #include "net/netobj.h"
 #include "net/netflow.h"
+#include "runopt.h"
 
 
 class Application final : public IApplication
 {
 private:
+	std::string _device;
+	std::shared_ptr<RunOption> _opt;
 	std::shared_ptr<Bootstrapper> _bt;
 	std::vector<std::shared_ptr<NetworkObject>> _obj;
 	std::vector<std::shared_ptr<NetworkFlow>> _flow;
@@ -17,7 +20,7 @@ private:
 public:
 	~Application() override = default;
 
-	bool Configure(const std::vector<std::string_view>& argv) override;
+	bool Configure(const std::vector<std::string>& argv) override;
 
 	void Start() override;
 

@@ -7,7 +7,7 @@
 
 Transmitter* Transmitter::_instance = nullptr;
 
-std::optional<size_t> Fragment::MTU(std::string_view interface)
+std::optional<size_t> Fragment::MTU(std::string interface)
 {
 	int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (fd == -1)

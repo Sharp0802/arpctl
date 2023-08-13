@@ -2,3 +2,4 @@ cmake-*/
 bin/
 obj/
 .idea/
+.cmake/

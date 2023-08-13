@@ -12,8 +12,8 @@ set_target_properties(arpctl PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin
 )
-target_link_libraries(arpctl PRIVATE pcap tbb)
+target_link_libraries(arpctl PRIVATE pcap tbb stdc++_libbacktrace)
 target_include_directories(arpctl PRIVATE inc)
 target_compile_features(arpctl PRIVATE cxx_std_23)
-target_compile_options(arpctl PRIVATE -Wall -Wextra -fno-rtti)
+target_compile_options(arpctl PRIVATE -Wall -Wextra -O2 -ggdb -DUNIQUE_DATA)
 target_precompile_headers(arpctl PRIVATE inc/pch.h)

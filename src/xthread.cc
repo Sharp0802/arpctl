@@ -22,7 +22,7 @@ void Worker::Start()
 
 	_token = true;
 	_state = State::OCCUPIED;
-	_worker = new std::thread([this](const volatile bool* token)
+	_worker = ::typed_alloc<std::thread>([this](const volatile bool* token)
 	{
 		try
 		{

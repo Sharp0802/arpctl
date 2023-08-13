@@ -6,20 +6,26 @@
 #include "log.h"
 #include "net/transmitter.h"
 #include "net/packet/packet.icmp.h"
+#include "net/netobj.h"
+#include "bootstrapper.h"
+
+using namespace std::chrono_literals;
 
 
 class TransmitterTestApplication : public IApplication
 {
 private:
-	std::string_view _dev;
-	std::vector<std::tuple<std::string_view, std::string_view>> _pairs;
+	std::string _dev;
+	std::vector<std::tuple<std::string, std::string>> _pairs;
 	MAC _selfMAC;
 	IP _selfIP;
+
+	std::shared_ptr<NetworkObject> _obj;
 
 public:
 	~TransmitterTestApplication() override = default;
 
-	bool Configure(const std::vector<std::string_view>& argv) override
+	bool Configure(const std::vector<std::string>& argv) override
 	{
 		if (argv.size() % 2 != 1 || argv.size() < 3)
 		{
@@ -53,13 +59,16 @@ public:
 		);
 		if (pcap == nullptr)
 		{
-			LOG(FAIL) << "couldn't open device" << _dev << '(' << std::string_view(err) << ")\n";
+			LOG(FAIL) << "couldn't open device" << _dev << '(' << std::string(err.data()) << ")\n";
 			return;
 		}
 
-		Transmitter transmitter(pcap);
-		Worker worker([&transmitter](const volatile bool* token){ transmitter.Run(token); });
-		worker.Start();
+		Bootstrapper bt(_dev, 1000ms);
+		bt.Start();
+
+		_obj = std::make_shared<NetworkObject>(IP::From(bt.Device.Get()).value());
+
+		_obj->InitializeComponents();
 
 		EthernetHeader eth(MAC::Broadcast, _selfMAC, EthernetHeader::EtherType::IPv4);
 
@@ -77,15 +86,15 @@ public:
 		ipv4.Source = _selfIP;
 		ipv4.Destination = IP({ 8, 8, 8, 8 });
 
-		ICMP icmp(ICMP::Type::EchoRequest, ICMP::Code::None, 0x00010001);
+		ICMP icmp(ICMP::Type::EchoRequest, ICMP::Code::None, 0x0000'0001);
 
 		ICMPPacket packet(eth, ipv4, icmp);
 		packet << "0123456789:;<=>?";
 
-		Transmitter::GetInstance().Transmit(packet.GetRaw());
+		_obj->Send(packet.GetRaw());
+
 		sleep(1000);
-		worker.Stop();
-		worker.Join();
+		bt.Abort();
 	}
 
 	enum Worker::State Join() override

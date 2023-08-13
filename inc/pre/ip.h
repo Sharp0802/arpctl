@@ -49,10 +49,10 @@ public:
 	explicit IP(void* raw);
 
 	[[nodiscard]]
-	static std::optional<IP> From(const std::string_view& str);
+	static std::optional<IP> From(const std::string& str);
 
 	[[nodiscard]]
-	static std::optional<IP> Self(const std::string_view& interface);
+	static std::optional<IP> Self(const std::string& interface);
 
 	[[nodiscard]]
 	static std::optional<IP> Self();
@@ -85,7 +85,7 @@ public:
 	};
 
 public:
-	explicit operator std::string_view() const;
+	explicit operator std::string() const;
 
 	IP& operator=(const IP& rhs);
 

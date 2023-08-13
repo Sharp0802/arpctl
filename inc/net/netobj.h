@@ -9,6 +9,7 @@
 #include "dat/octet_stream.h"
 #include "event.h"
 #include "receiver.h"
+#include "sniffer.h"
 
 
 class NetworkObject final

@@ -1,14 +1,18 @@
 #include "sniffer.h"
 #include "log.h"
 
-Sniffer::Sniffer(NetworkObject& object)
+std::unique_ptr<Sniffer> Sniffer::_instance = nullptr;
+
+void Sniffer::Start()
 {
-	Receiver::HandlerType handler([this](const auto& hdr, const auto& data)
+	_instance = std::make_unique<Sniffer>();
+
+	Receiver::HandlerType handler([](const auto& hdr, const auto& data)
 	{
-		Handle(hdr, data);
+		_instance->Handle(hdr, data);
 	});
 
-	object += handler;
+	Receiver::GetInstance() += handler;
 }
 
 void Sniffer::Handle(const HeaderSet& hdr, const OctetStream& data) noexcept
@@ -35,12 +39,12 @@ void Sniffer::Handle(const HeaderSet& hdr, const OctetStream& data) noexcept
 		std::vector<char> fieldBuf(16, ' ');
 		fieldBuf[15] = 0;
 
-		auto sip = static_cast<std::string_view>(ipv4.Source.Get());
+		auto sip = static_cast<std::string>(ipv4.Source.Get());
 		_rt_memcpy(&fieldBuf[fieldBuf.size() - sip.size()], sip.data(), sip.size());
 		buf << fieldBuf.data() << " → ";
 
 		std::fill(fieldBuf.begin(), fieldBuf.end() - 1, ' ');
-		auto dip = static_cast<std::string_view>(ipv4.Destination.Get());
+		auto dip = static_cast<std::string>(ipv4.Destination.Get());
 		buf << dip << "  ";
 
 		break;
@@ -52,12 +56,12 @@ void Sniffer::Handle(const HeaderSet& hdr, const OctetStream& data) noexcept
 		std::vector<char> fieldBuf(18, ' ');
 		fieldBuf[17] = 0;
 
-		auto smac = static_cast<std::string_view>(eth.Source.Get());
+		auto smac = static_cast<std::string>(eth.Source.Get());
 		_rt_memcpy(&fieldBuf[fieldBuf.size() - smac.size()], smac.data(), smac.size());
 		buf << fieldBuf.data() << " → ";
 
 		std::fill(fieldBuf.begin(), fieldBuf.end() - 1, ' ');
-		auto dmac = static_cast<std::string_view>(eth.Destination.Get());
+		auto dmac = static_cast<std::string>(eth.Destination.Get());
 		buf << dmac << "  ";
 
 		break;
@@ -71,17 +75,17 @@ void Sniffer::Handle(const HeaderSet& hdr, const OctetStream& data) noexcept
 		auto arp = hdr.GetARP();
 		if (arp.OPCode.Get() == ARPHeader::OPCode::Request)
 		{
-			buf << "Who has " << static_cast<std::string_view>(arp.TargetIP.Get())
-				<< "? Tell " << static_cast<std::string_view>(arp.SenderIP.Get())
-				<< '(' << static_cast<std::string_view>(arp.SenderMAC.Get())
+			buf << "Who has " << static_cast<std::string>(arp.TargetIP.Get())
+				<< "? Tell " << static_cast<std::string>(arp.SenderIP.Get())
+				<< '(' << static_cast<std::string>(arp.SenderMAC.Get())
 				<< ").";
 		}
 		else
 		{
-			buf << "Hello, " << static_cast<std::string_view>(arp.TargetIP.Get())
-				<< '(' << static_cast<std::string_view>(arp.TargetMAC.Get())
-				<< "), I'm " << static_cast<std::string_view>(arp.SenderIP.Get())
-				<< "(" << static_cast<std::string_view>(arp.SenderMAC.Get())
+			buf << "Hello, " << static_cast<std::string>(arp.TargetIP.Get())
+				<< '(' << static_cast<std::string>(arp.TargetMAC.Get())
+				<< "), I'm " << static_cast<std::string>(arp.SenderIP.Get())
+				<< "(" << static_cast<std::string>(arp.SenderMAC.Get())
 				<< ").";
 		}
 		break;

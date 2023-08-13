@@ -4,7 +4,6 @@
 #include "net/transmitter.h"
 #include "net/receiver.h"
 #include "xthread.h"
-#include "jobsys.h"
 
 
 class Bootstrapper final
@@ -20,13 +19,12 @@ private:
 
 	Transmitter* _tx = nullptr;
 	Receiver* _rx = nullptr;
-	JobSystem* _jsys = nullptr;
 	bool _init;
 
-	std::string_view _dev;
+	std::string _dev;
 
 public:
-	explicit Bootstrapper(std::string_view device, std::chrono::milliseconds timeout);
+	explicit Bootstrapper(std::string device, std::chrono::milliseconds timeout);
 
 	~Bootstrapper();
 
@@ -39,7 +37,7 @@ public:
 
 	void Abort();
 
-	readonly<std::string_view> Device{
+	readonly<std::string> Device{
 			_get
 			{
 				return _dev;

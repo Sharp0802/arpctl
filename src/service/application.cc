@@ -1,4 +1,6 @@
 #include "service/application.h"
+
+#include <memory>
 #include "service/runopt.h"
 
 /*
@@ -15,14 +17,19 @@
  *
  * */
 
-bool Application::Configure(const std::vector<std::string_view>& argv)
+bool Application::Configure(const std::vector<std::string>& argv)
 {
 	LOG(VERB) << "parsing arguments...";
+	std::stringstream str;
+	str << "accepted: ";
+	for (auto& arg: argv)
+		str << " '" << arg << "' ";
+	LOG(VERB) << str.str();
 
 	DTO(RunOption) opt{};
 
 	uint8_t mode = 0;
-	std::string_view dev;
+	std::string dev;
 	std::optional<std::chrono::milliseconds> timeout;
 
 	size_t i = 0;
@@ -50,7 +57,7 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 					mode = 1;
 					break;
 				case 'S':
-					opt.use_sniffer = true;
+					opt.view_pkt = true;
 					break;
 				case 't':
 					mode = 3;
@@ -68,8 +75,10 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 		else if (mode == 3)
 		{
 			timeout = std::chrono::milliseconds(std::strtoul(argv[i].data(), nullptr, 10));
+			opt.timeout = timeout.value();
 		}
 	}
+	_device = dev;
 
 	if (dev.empty())
 	{
@@ -87,28 +96,43 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 		return false;
 	}
 
+	_opt = std::make_shared<RunOption>(opt);
+
 	if (mode != 2)
 		i++;
 
-	if ((argv.size() - i + 1) % 2)
+	if ((argv.size() - i) % 2)
 	{
 		LOG(CRIT) << "ip could not be paired";
 		return false;
 	}
 
-	bool fail = false;
-	std::vector<std::shared_ptr<NetworkObject>> set;
-	for (; i < argv.size(); ++i)
+	/* BOOTSTRAPPING */
+	LOG(VERB) << "bootstrapping...";
+
+	_bt = std::make_shared<Bootstrapper>(_device, RunOption::Global().Timeout.Get());
+	if (!_bt->Start())
 	{
-		auto ip = IP::From(argv[i]);
+		LOG(CRIT) << "could not boot";
+		return false;
+	}
+
+	/* CREATE NETWORK-OBJECTS */
+	bool fail = false;
+	auto f = i;
+	std::vector<std::shared_ptr<NetworkObject>> set;
+	for (; f < argv.size(); ++f)
+	{
+		auto ip = IP::From(argv[f]);
 		if (!ip)
 		{
-			LOG(FAIL) << "could not parse ip string: " << argv[i];
+			LOG(FAIL) << "could not parse ip string: " << argv[f];
 			fail = true;
 			continue;
 		}
 
 		auto ptr = std::make_shared<NetworkObject>(ip.value());
+		LOG(VERB) << "network-object created (" << static_cast<std::string>(ptr->IP.Get()) << ')';
 		set.push_back(ptr);
 	}
 	if (fail)
@@ -117,27 +141,22 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 		return false;
 	}
 
+	LOG(VERB) << "creating flow...";
 	_obj = set;
 	std::vector<std::shared_ptr<NetworkFlow>> flow;
-	for (; i < argv.size(); i += 2)
+	f = i;
+	for (; f < argv.size(); f += 2)
 	{
-		flow.push_back(std::make_shared<NetworkFlow>(*set.at(i), *set.at(i + 1)));
+		flow.push_back(std::make_shared<NetworkFlow>(*set.at(f - i), *set.at(f - i + 1)));
+		LOG(VERB) << "flow created (" << static_cast<std::string>(set.at(f - i)->IP.Get())
+				  << " -> " << static_cast<std::string>(set.at(f - i + 1)->IP.Get());
 	}
 
 	_flow = flow;
+	LOG(NOTE) << "Flow created(" << _flow.size() << ')';
 
-	LOG(VERB) << "bootstrapping...";
-
-	_bt = std::make_shared<Bootstrapper>(dev, timeout.value());
-	if (!_bt->Start())
-	{
-		LOG(CRIT) << "could not boot";
-		return false;
-	}
-
-	RunOption _(opt);
-
-	LOG(NOTE) << "application configured!";
+	LOG(NOTE) << "application configured with:\n"
+			  << "view-packet: " << _opt->ViewPacket.Get();
 
 	return true;
 }
@@ -145,10 +164,16 @@ bool Application::Configure(const std::vector<std::string_view>& argv)
 void Application::Start()
 {
 	/* INITIALIZATION */
+	LOG(VERB) << "initializing(" << _flow.size() << ")...";
 	std::vector<std::future<bool>> when;
 	when.reserve(_flow.size());
 	for (auto& flow: _flow)
+	{
 		when.emplace_back(flow->InitializeComponentsAsync());
+	}
+
+	for (auto& task: when)
+		task.wait();
 
 	bool init = true;
 	for (auto& task: when)
@@ -163,8 +188,12 @@ void Application::Start()
 	}
 
 	/* START FLOW */
+	LOG(VERB) << "start flowing...";
 	for (auto& flow: _flow)
 		when.emplace_back(flow->Run());
+
+	for (auto& task: when)
+		task.wait();
 
 	init = true;
 	for (auto& task: when)
@@ -179,12 +208,16 @@ void Application::Start()
 	}
 
 	/* BIND RELAYER */
+	LOG(VERB) << "binding relayer...";
 	for (auto& flow: _flow)
 		when.emplace_back(flow->Relay());
 
 	init = true;
 	for (auto& task: when)
 		init &= task.get();
+
+	for (auto& task: when)
+		task.wait();
 
 	when.clear();
 
@@ -195,6 +228,7 @@ void Application::Start()
 	}
 
 	/* START PERIODIC INFECTION */
+	LOG(VERB) << "start periodic infection...";
 	auto period = RunOption::Global().Timeout.Get();
 	for (auto& flow: _flow)
 		flow->Periodic(period);
@@ -218,4 +252,6 @@ void Application::Abort()
 {
 	for (auto& flow: _flow)
 		flow->Stop();
+
+
 }

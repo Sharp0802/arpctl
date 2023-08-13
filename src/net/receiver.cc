@@ -122,7 +122,7 @@ void Receiver::Run(volatile const bool* token) const
 			{
 				LOG(WARN) << "invalid packet data detected. receiver will drop it.\n"
 							 "=== PACKET DATA OPEN ===\n"
-						  << static_cast<std::string_view>(stream)
+						  << static_cast<std::string>(stream)
 						  << "\n=== PACKET DATA CLOSE ===";
 				break;
 			}

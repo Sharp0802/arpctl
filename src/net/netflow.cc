@@ -15,6 +15,7 @@ NetworkFlow::NetworkFlow(NetworkObject& sender, NetworkObject& target) :
 
 bool NetworkFlow::InitializeComponents()
 {
+	LOG(VERB) << "request to initialize components...";
 	auto ts = _sender.InitializeComponentsAsync();
 	auto tt = _target.InitializeComponentsAsync();
 	return ts.get() && tt.get();
@@ -49,7 +50,7 @@ std::future<bool> NetworkFlow::Run()
 			if (RunOption::Global().CheckICMP.Get())
 			{
 				LOG(INFO) << "attempt to spoof ARP table of "
-						  << static_cast<std::string_view>(_sender.IP.Get())
+						  << static_cast<std::string>(_sender.IP.Get())
 						  << " [" << attempt << "/5]";
 				affect = _sender.InfectAsync(_target.IP.Get()).get();
 				if (affect)
@@ -60,25 +61,25 @@ std::future<bool> NetworkFlow::Run()
 				else
 				{
 					LOG(FAIL) << "could not infect "
-							  << static_cast<std::string_view>(_sender.IP.Get());
+							  << static_cast<std::string>(_sender.IP.Get());
 				}
 
 				if (affect)
 				{
 					LOG(NOTE) << "ARP table for "
-							  << static_cast<std::string_view>(_sender.IP.Get())
+							  << static_cast<std::string>(_sender.IP.Get())
 							  << "has been infected";
 				}
 				else
 				{
 					LOG(WARN) << "failed to attempt spoof ARP table of "
-							  << static_cast<std::string_view>(_sender.IP.Get());
+							  << static_cast<std::string>(_sender.IP.Get());
 				}
 			}
 			else
 			{
 				LOG(INFO) << "attempt to spoof ARP table of "
-						  << static_cast<std::string_view>(_sender.IP.Get());
+						  << static_cast<std::string>(_sender.IP.Get());
 				affect = _sender.InfectAsync(_target.IP.Get()).get();
 				if (affect)
 				{
@@ -87,7 +88,7 @@ std::future<bool> NetworkFlow::Run()
 				else
 				{
 					LOG(FAIL) << "could not infect "
-							  << static_cast<std::string_view>(_sender.IP.Get());
+							  << static_cast<std::string>(_sender.IP.Get());
 				}
 			}
 		} while (!affect && attempt++ < 5);
@@ -95,7 +96,7 @@ std::future<bool> NetworkFlow::Run()
 		if (!affect)
 		{
 			LOG(FAIL) << "could not spoof ARP table of "
-					  << static_cast<std::string_view>(_sender.IP.Get());
+					  << static_cast<std::string>(_sender.IP.Get());
 			return false;
 		}
 

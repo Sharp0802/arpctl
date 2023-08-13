@@ -6,6 +6,7 @@
 #include "net/packet/packet.arp.h"
 #include "net/packet/packet.icmp.h"
 #include "rand.h"
+#include "sniffer.h"
 
 static std::map<IP, MAC> ARPTable{};
 
@@ -64,13 +65,13 @@ std::future<bool> NetworkObject::ResolveMACAsync()
 
 		EthernetHeader eth(MAC::Broadcast, selfMAC.value(), EthernetHeader::EtherType::ARP);
 		ARPHeader arp;
+		arp.Hardware = ARPHeader::HardwareType::Ethernet;
+		arp.Protocol = ARPHeader::ProtocolType::IPv4;
+		arp.OPCode = ARPHeader::OPCode::Request;
 		arp.SenderIP = selfIP.value();
 		arp.SenderMAC = selfMAC.value();
 		arp.TargetIP = _ip;
 		arp.TargetMAC = MAC::Unknown;
-		arp.Hardware = ARPHeader::HardwareType::Ethernet;
-		arp.Protocol = ARPHeader::ProtocolType::IPv4;
-		arp.OPCode = ARPHeader::OPCode::Request;
 
 		ARPPacket packet(eth, arp);
 
@@ -90,9 +91,9 @@ std::future<bool> NetworkObject::ResolveMACAsync()
 		}
 
 		LOG(NOTE) << "MAC resolved. data will be cached"
-				  << static_cast<std::string_view>(_ip)
+				  << static_cast<std::string>(_ip)
 				  << " -> "
-				  << static_cast<std::string_view>(_mac);
+				  << static_cast<std::string>(_mac);
 
 		ARPTable.emplace(_ip, _mac);
 
@@ -103,6 +104,7 @@ std::future<bool> NetworkObject::ResolveMACAsync()
 
 bool NetworkObject::InitializeComponents()
 {
+	LOG(VERB) << "requested to initialize...";
 	auto resolver = ResolveMACAsync();
 	Receiver::GetInstance() += _handler;
 	return resolver.get();
@@ -188,12 +190,12 @@ bool NetworkObject::InfectionTest(const ::IP& ip, std::chrono::milliseconds time
 				size_t ofs = sizeof(DTO(EthernetHeader)) + sizeof(DTO(ICMP));
 				if (data.Size() < ofs + 16)
 				{
-					LOG(WARN) << static_cast<std::string_view>(_ip)
+					LOG(WARN) << static_cast<std::string>(_ip)
 							  << ": invalid response size detected. integrity can not be ensured";
 				}
 				else if (std::memcmp(data.As<char>(ofs), rsig.data(), 16) != 0)
 				{
-					LOG(WARN) << static_cast<std::string_view>(_ip)
+					LOG(WARN) << static_cast<std::string>(_ip)
 							  << ": invalid response detected. integrity can not be ensured";
 				}
 

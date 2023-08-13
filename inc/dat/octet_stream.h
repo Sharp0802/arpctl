@@ -9,7 +9,11 @@ class OctetStream final
 private:
 	size_t _cap;
 	size_t _size;
+#ifdef UNIQUE_DATA
 	uint8_t* _data;
+#else
+	std::shared_ptr<uint8_t[]> _data;
+#endif
 
 public:
 	OctetStream() noexcept;
@@ -23,10 +27,14 @@ public:
 	~OctetStream();
 
 private:
+#ifdef UNIQUE_DATA
 	uint8_t* Release() noexcept;
+#endif
 
 public:
+#ifdef UNIQUE_DATA
 	void Swap(OctetStream& stream) noexcept;
+#endif
 
 	[[nodiscard]]
 	size_t Capacity() const noexcept;
@@ -41,23 +49,25 @@ public:
 	[[nodiscard]]
 	T* __As(size_t offset) const noexcept
 	{
+#ifdef UNIQUE_DATA
 		return (offset + sizeof(T) > _size)
 			   ? nullptr
 			   : reinterpret_cast<T*>(_data + offset);
+#else
+		return (offset + sizeof(T) > _size)
+			   ? nullptr
+			   : reinterpret_cast<T*>(Get() + offset);
+#endif
 	}
 
 public:
 	OctetStream& operator=(const OctetStream& rhs) = delete;
 
-	OctetStream& operator=(OctetStream&& rhs) noexcept
-	{
-		OctetStream(std::move(rhs)).Swap(*this);
-		return *this;
-	}
+	OctetStream& operator=(OctetStream&& rhs) noexcept;
 
 	OctetStream& operator+=(const OctetStream& rhs);
 
-	explicit operator std::string_view() const;
+	explicit operator std::string() const;
 };
 
 #define As template __As

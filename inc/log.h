@@ -2,6 +2,16 @@
 #define ARPCTL_LOG_H
 
 #include "framework.h"
+#include "xthread.h"
+
+
+#ifdef TRACE_FLOW
+#define TRACE std::cout << '\n' << reinterpret_cast<size_t>(this) << ":" << __PRETTY_FUNCTION__ << ":" << __FILE_NAME__ << ':' << __LINE__ << '\n'
+#define TRACE_S std::cout << '\n' << __PRETTY_FUNCTION__ << ":" << __FILE_NAME__ << ':' << __LINE__ << '\n'
+#else
+#define TRACE
+#define TRACE_S
+#endif
 
 #define CRIT "crit"
 #define FAIL "fail"
@@ -25,12 +35,11 @@ char_seq<str...> operator ""_seq()
 class msg_body final
 {
 private:
-	size_t _pad;
 	std::basic_ostream<char>& _out;
 	std::stringstream _buf;
 
 public:
-	msg_body(std::string_view heading, std::basic_ostream<char>& out);
+	msg_body(const std::string& heading, std::basic_ostream<char>& out);
 
 	~msg_body();
 
@@ -38,58 +47,8 @@ public:
 	template<typename T>
 	msg_body& operator<<(const T& arg)
 	{
+		TRACE;
 		_buf << arg;
-		return *this;
-	}
-
-	msg_body& operator<<(const std::string_view& arg)
-	{
-		size_t p, o = 0;
-		while ((p = arg.find('\n')) != std::string::npos)
-		{
-			_buf << arg.substr(o, p - o + 1) << std::string(' ', _pad);
-			o = p;
-		}
-		_buf << arg.substr(o, p - o + 1);
-
-		return *this;
-	}
-
-	msg_body& operator<<(const char* arg)
-	{
-		char* window = new char[strlen(arg)];
-		char* frame = window;
-		strcpy(window, arg);
-
-		char* p;
-		while ((p = strchr(window, '\n')))
-		{
-			*p = 0;
-			_buf << window << '\n' << std::string(_pad, ' ');
-			window = p + 1;
-		}
-		_buf << window;
-
-		delete[] frame;
-
-		return *this;
-	}
-
-	template<size_t N>
-	msg_body& operator<<(const char arg[N])
-	{
-		char window[N];
-		strcpy(window, arg);
-
-		char* p;
-		while ((p = strchr(window, '\n')))
-		{
-			*p = 0;
-			_buf << window << '\n' << std::string(_pad, ' ');
-			window = p + 1;
-		}
-		_buf << window;
-
 		return *this;
 	}
 };
@@ -131,6 +90,10 @@ public:
 #define __STR(sym) #sym
 #define _STR(sym) __STR(sym)
 
+#ifdef TMP_LOGGER
 #define LOG(head) msg_head<_TSTR(__FILE_NAME__), _TSTR(_STR(__LINE__)), _TSTR(head)>::init()
+#else
+#define LOG(head) std::cout << '\n' << '[' << Worker::ID() << ']' << __FILE_NAME__ << ':' << __LINE__ << ": " << head << ": "
+#endif
 
 #endif //ARPCTL_LOG_H

@@ -7,8 +7,14 @@
 
 class Sniffer final
 {
+private:
+	static std::unique_ptr<Sniffer> _instance;
+
 public:
-	Sniffer(NetworkObject& object);
+	Sniffer() = default;
+
+public:
+	static void Start();
 
 private:
 	void Handle(const HeaderSet& hdr, const OctetStream& data) noexcept;
